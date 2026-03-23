@@ -15,7 +15,7 @@
 Research Analysis Platform (RAP) data exports. It focuses on standardized
 phenotyping, survival-ready datasets, and scalable preprocessing.
 
-**For details, please visit**: <https://hinna0818.github.io/UKBAnalytica/>
+**For details, please visit**: [Full documentation for UKBAnalytica](https://hinna0818.github.io/UKBAnalytica/)
 
 ## Installation
 
