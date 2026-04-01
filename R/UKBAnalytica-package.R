@@ -41,7 +41,10 @@
 #' @aliases UKBAnalytica-package
 #'
 #' @import data.table
+#' @import ggplot2
 #' @importFrom stringi stri_extract_all_regex stri_trim_both
+#' @importFrom stats quantile relevel sd
+#' @importFrom grid unit
 #'
 "_PACKAGE"
 
@@ -53,5 +56,20 @@ utils::globalVariables(c(
   "cause_type", "baseline_date", "end_date", "status", "surv_time",
   "prevalent_case", "diagnosis_source", "p41270", "p41271",
   "default_surv_time", "control_surv_time", "primary_outcome_prevalent",
-  "outcome_status", "outcome_surv_time", "outcome_prevalent"
+  "outcome_status", "outcome_surv_time", "outcome_prevalent",
+  # New variables for subgroup/propensity/visualization modules
+  "subgroup_var_name", "subgroup_level", "n_total", "n_event",
+  "ps", "weight", "match_id", "match_distance", "..covariates",
+  "mean_treated", "mean_control", "smd", "balanced",
+  "subgroup", "estimate", "lower95", "upper95", "ci_label", "x_pos",
+  "ymin", "ymax", "time", "surv", "strata", "n.risk", "n.event",
+  "group", "method", "smd_before", "smd_after",
+  "observed", "predicted", "bin", "lower", "upper", "count",
+  # Mediation analysis module variables
+  "effect", "effect_label", "color_group", "est", "p", "p_label",
+  "effect_type", "value", "abs_value", "proportion", "mediator", "se",
+  "pvalue", "sig", "name",
+  # Multiple imputation module variables
+  "term", "std.error", "statistic", "conf.low", "conf.high", "fmi",
+  "fmi_pct", "level"
 ))

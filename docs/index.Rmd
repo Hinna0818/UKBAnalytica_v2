@@ -32,6 +32,7 @@ survival datasets.
 - Generates survival datasets with proper prevalent/incident case handling.
 - Includes predefined definitions for common cardiovascular and metabolic diseases.
 - Provides standardized preprocessing for common UKB baseline variables.
+- **Advanced analysis modules**: subgroup analysis, propensity score methods, mediation analysis, and multiple imputation pooling.
 
 ## Installation
 
@@ -52,6 +53,8 @@ The package covers the following workflow:
 4. **Survival analysis** -- Build Cox-ready datasets with proper prevalent/incident classification.
 5. **Baseline tables** -- Create Table 1 summaries stratified by case/control status.
 6. **Multiple imputation** -- Impute missing covariates and merge results back to the full dataset.
+7. **Main analysis** -- Correlation analysis and regression models (linear, logistic, Cox).
+8. **Advanced analysis** -- Subgroup analysis, propensity score, mediation, MI pooling.
 
 The remaining chapters walk through each step with code examples.
 
@@ -66,3 +69,17 @@ The remaining chapters walk through each step with code examples.
 | `preprocess_baseline()` | Preprocess baseline characteristics |
 | `create_baseline_table()` | Create a Table 1 (via `tableone`) |
 | `run_imputation()` | Multiple imputation with `mice` |
+
+## Advanced analysis functions
+
+| Function | Description |
+|:---------|:------------|
+| `run_subgroup_analysis()` | Stratified analysis with interaction p-values |
+| `run_multi_subgroup()` | Batch subgroup analysis across multiple variables |
+| `estimate_propensity_score()` | Estimate propensity scores |
+| `match_propensity()` | Propensity score matching |
+| `calculate_weights()` | IPTW weight calculation |
+| `run_mediation()` | Causal mediation analysis |
+| `pool_mi_models()` | Pool results from multiple imputation |
+| `plot_forest()` | Forest plot visualization |
+| `plot_km_curve()` | Kaplan-Meier curves |

@@ -55,11 +55,47 @@ head(analysis_dt[, .(
 
 ## What this package covers
 
-- RAP data download helpers (Python scripts).
-- Baseline preprocessing with standardized mappings.
-- Multi-source disease definitions (ICD-10, ICD-9, self-report, death).
-- Survival analysis datasets with prevalent/incident classification.
-- Baseline Table 1 summaries and multiple imputation.
+### Core Functionality
+- RAP data download helpers (Python scripts)
+- Baseline preprocessing with standardized mappings
+- Multi-source disease definitions (ICD-10, ICD-9, self-report, death)
+- Survival analysis datasets with prevalent/incident classification
+- Baseline Table 1 summaries and multiple imputation
+
+### Advanced Analysis Modules (v0.5.0+)
+- **Subgroup Analysis**: Stratified analysis with interaction p-values
+- **Propensity Score Methods**: PSM matching and IPTW weighting
+- **Mediation Analysis**: Causal mediation using regmedint backend
+- **MI Pooling**: Multiple imputation result combining (Rubin's Rules)
+- **Visualization**: Forest plots, K-M curves, balance plots, diagnostic plots
+
+## Advanced Analysis Example
+
+```r
+# Subgroup analysis
+results <- run_subgroup_analysis(
+  data = dt, exposure = "treatment", outcome = "event",
+  subgroup_var = "age_group", model_type = "cox",
+  endpoint = c("time", "status")
+)
+plot_forest(results)
+
+# Multiple imputation pooling
+pooled <- pool_mi_models(
+  datasets = mi_datasets,
+  formula = Surv(time, status) ~ treatment + age + sex,
+  model_type = "cox"
+)
+summary(pooled)
+
+# Mediation analysis
+med <- run_mediation(
+
+  data = dt, exposure = "treatment", mediator = "biomarker",
+  outcome = "event", outcome_type = "cox"
+)
+plot_mediation(med, type = "effects")
+```
 
 ## License
 

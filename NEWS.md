@@ -1,5 +1,55 @@
 # UKBAnalytica News
 
+## UKBAnalytica 0.5.0 (2026-04-01)
+
+### New Modules: Advanced Statistical Analysis
+
+#### Subgroup Analysis (`subgroup.R`)
+- `run_subgroup_analysis()`: Stratified analysis with interaction p-values
+- `run_multi_subgroup()`: Batch analysis across multiple subgroup variables
+- Supports Cox, logistic, and linear regression models
+
+#### Propensity Score Methods (`propensity.R`)
+- `estimate_propensity_score()`: PS estimation via logistic regression or GBM
+- `match_propensity()`: 1:k nearest neighbor matching with caliper
+- `calculate_weights()`: IPTW weights (ATE, ATT, ATC)
+- `assess_balance()`: Covariate balance assessment with SMD
+- `run_weighted_analysis()`: Weighted regression analysis
+
+#### Mediation Analysis (`mediation.R`)
+- `run_mediation()`: Causal mediation analysis (wrapping regmedint)
+- `run_multi_mediator()`: Test multiple mediators
+- `run_sensitivity_mediation()`: Sensitivity analysis for unmeasured confounding
+- Supports linear, logistic, and Cox outcome models
+- Effects: CDE, PNDE, TNIE, TE, Proportion Mediated
+
+#### Multiple Imputation Pooling (`mi_pool.R`)
+- `pool_mi_models()`: Combine regression results using Rubin's Rules
+- `fit_mi_models()`: Fit models across imputed datasets
+- `create_imputation_list()`: Convert to mitools imputationList
+- `pool_custom_estimates()`: Pool custom statistics
+- Supports lm, logistic, poisson, cox, negbin models
+- Reports FMI (Fraction of Missing Information)
+
+#### Visualization (`visualization.R`)
+- `plot_forest()`: Forest plots for subgroup/regression results
+- `plot_km_curve()`: Kaplan-Meier survival curves
+- `plot_ps_distribution()`: Propensity score distribution (histogram/density)
+- `plot_balance()`: Covariate balance before/after matching
+- `plot_calibration()`: Calibration plots
+- `plot_mediation()`: Mediation effect plots (bar, decomposition, path diagram)
+- `plot_mediation_forest()`: Multi-mediator forest plot
+- `plot_mi_pooled()`: MI pooled results forest plot
+- `plot_mi_diagnostics()`: FMI and variance diagnostics
+
+### Documentation
+- New chapter: Advanced Analysis Modules (`docs/08-advanced-analysis.Rmd`)
+- Updated technical design document with all module specifications
+- Updated README with advanced analysis examples
+
+### Dependencies (Suggests)
+- Added: `MatchIt`, `gbm`, `regmedint`, `mitools`, `MASS`, `cobalt`
+
 ## UKBAnalytica 0.4.0 (2026-02-05)
 Fix bug in `survival.R`: person who has primary disease before initial time will be set `NA` in survival time (in order to distinguish it from person who has primary disease after initial time, with `non-NA` survival time). 
 
