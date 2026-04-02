@@ -1402,3 +1402,584 @@ plot_mi_diagnostics <- function(mi_result,
 
   return(p)
 }
+
+# ============================================================================
+# Machine Learning Visualization Functions
+# ============================================================================
+
+#' Plot Variable Importance
+#'
+#' @description
+#' Create a bar plot of variable importance from a trained ML model.
+#'
+#' @param object A ukb_ml object from ukb_ml_model()
+#' @param n_features Number of top features to display (default 20)
+#' @param type Plot type: "bar" or "dot"
+#' @param color Bar color (default "#3182BD")
+#' @param title Plot title
+#' @param ... Additional arguments
+#'
+#' @return A ggplot2 object
+#'
+#' @examples
+#' \dontrun{
+#' ml <- ukb_ml_model(outcome ~ ., data, model = "rf")
+#' plot_ml_importance(ml, n_features = 15)
+#' }
+#'
+#' @import ggplot2
+#' @export
+plot_ml_importance <- function(object,
+                               n_features = 20,
+                               type = c("bar", "dot"),
+                               color = "#3182BD",
+                               title = "Variable Importance",
+                               ...) {
+  
+  type <- match.arg(type)
+  
+  # Get importance
+  imp <- ukb_ml_importance(object)
+  
+  if (is.null(imp)) {
+    stop("Variable importance not available for this model type")
+  }
+  
+  # Limit features
+  if (nrow(imp) > n_features) {
+    imp <- imp[seq_len(n_features), ]
+  }
+  
+  # Order factor levels
+  imp$variable <- factor(imp$variable, levels = rev(imp$variable))
+  
+  if (type == "bar") {
+    p <- ggplot(imp, aes(x = variable, y = importance)) +
+      geom_col(fill = color, width = 0.7) +
+      coord_flip() +
+      labs(
+        title = title,
+        x = NULL,
+        y = "Importance"
+      ) +
+      theme_minimal(base_size = 12) +
+      theme(
+        plot.title = element_text(hjust = 0.5, face = "bold")
+      )
+  } else {
+    p <- ggplot(imp, aes(x = variable, y = importance)) +
+      geom_segment(aes(xend = variable, yend = 0), color = "gray70") +
+      geom_point(color = color, size = 3) +
+      coord_flip() +
+      labs(
+        title = title,
+        x = NULL,
+        y = "Importance"
+      ) +
+      theme_minimal(base_size = 12) +
+      theme(
+        plot.title = element_text(hjust = 0.5, face = "bold")
+      )
+  }
+  
+  p
+}
+
+#' Plot ROC Curves
+#'
+#' @description
+#' Create ROC curve plot for one or more ML models.
+#'
+#' @param object A ukb_ml_roc object from ukb_ml_roc()
+#' @param ci_alpha Alpha for confidence interval ribbon (default 0.2)
+#' @param title Plot title
+#' @param ... Additional arguments
+#'
+#' @return A ggplot2 object
+#'
+#' @examples
+#' \dontrun{
+#' ml <- ukb_ml_model(outcome ~ ., data, model = "rf")
+#' roc_result <- ukb_ml_roc(ml)
+#' plot(roc_result)
+#' }
+#'
+#' @import ggplot2
+#' @export
+plot_ml_roc <- function(object,
+                        ci_alpha = 0.2,
+                        title = "ROC Curve",
+                        ...) {
+  
+  if (!inherits(object, "ukb_ml_roc")) {
+    stop("object must be a ukb_ml_roc object")
+  }
+  
+  # Extract ROC data
+  roc_data <- data.frame()
+  
+  for (name in names(object$roc)) {
+    roc_obj <- object$roc[[name]]
+    auc_val <- object$auc$auc[object$auc$model == name]
+    
+    df <- data.frame(
+      sensitivity = roc_obj$sensitivities,
+      specificity = roc_obj$specificities,
+      model = sprintf("%s (AUC = %.3f)", name, auc_val),
+      stringsAsFactors = FALSE
+    )
+    
+    roc_data <- rbind(roc_data, df)
+  }
+  
+  p <- ggplot(roc_data, aes(x = 1 - specificity, y = sensitivity, color = model)) +
+    geom_line(linewidth = 1) +
+    geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "gray50") +
+    scale_x_continuous(limits = c(0, 1)) +
+    scale_y_continuous(limits = c(0, 1)) +
+    coord_equal() +
+    labs(
+      title = title,
+      x = "1 - Specificity (False Positive Rate)",
+      y = "Sensitivity (True Positive Rate)",
+      color = "Model"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+      plot.title = element_text(hjust = 0.5, face = "bold"),
+      legend.position = "bottom"
+    )
+  
+  p
+}
+
+#' Plot Calibration Curve
+#'
+#' @description
+#' Create calibration curve plot showing predicted vs observed probabilities.
+#'
+#' @param object A ukb_ml_calibration object from ukb_ml_calibration()
+#' @param title Plot title
+#' @param ... Additional arguments
+#'
+#' @return A ggplot2 object
+#'
+#' @import ggplot2
+#' @export
+plot_ml_calibration <- function(object,
+                                title = "Calibration Curve",
+                                ...) {
+  
+  if (!inherits(object, "ukb_ml_calibration")) {
+    stop("object must be a ukb_ml_calibration object")
+  }
+  
+  cal_data <- object$calibration
+  
+  p <- ggplot(cal_data, aes(x = predicted, y = observed)) +
+    geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "gray50") +
+    geom_errorbar(aes(ymin = lower, ymax = upper), width = 0.02, color = "gray70") +
+    geom_point(aes(size = count), color = "#E34A33") +
+    scale_size_continuous(range = c(2, 8), name = "N") +
+    scale_x_continuous(limits = c(0, 1)) +
+    scale_y_continuous(limits = c(0, 1)) +
+    coord_equal() +
+    labs(
+      title = title,
+      subtitle = sprintf("Brier Score: %.4f, ECE: %.4f", object$brier_score, object$ece),
+      x = "Predicted Probability",
+      y = "Observed Proportion"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+      plot.title = element_text(hjust = 0.5, face = "bold"),
+      plot.subtitle = element_text(hjust = 0.5)
+    )
+  
+  p
+}
+
+#' Plot Confusion Matrix
+#'
+#' @description
+#' Create heatmap visualization of confusion matrix.
+#'
+#' @param object A ukb_ml_confusion object from ukb_ml_confusion()
+#' @param normalize Whether to show percentages (default TRUE)
+#' @param colors Color gradient (default c("white", "#E34A33"))
+#' @param title Plot title
+#' @param ... Additional arguments
+#'
+#' @return A ggplot2 object
+#'
+#' @import ggplot2
+#' @export
+plot_ml_confusion <- function(object,
+                              normalize = TRUE,
+                              colors = c("white", "#E34A33"),
+                              title = "Confusion Matrix",
+                              ...) {
+  
+  if (!inherits(object, "ukb_ml_confusion")) {
+    stop("object must be a ukb_ml_confusion object")
+  }
+  
+  cm <- object$confusion_matrix
+  
+  # Convert to data frame
+  cm_df <- as.data.frame(as.table(cm))
+  names(cm_df) <- c("Predicted", "Actual", "Freq")
+  
+  if (normalize) {
+    total <- sum(cm_df$Freq)
+    cm_df$Proportion <- cm_df$Freq / total
+    cm_df$Label <- sprintf("%d\n(%.1f%%)", cm_df$Freq, cm_df$Proportion * 100)
+    fill_var <- "Proportion"
+  } else {
+    cm_df$Label <- as.character(cm_df$Freq)
+    fill_var <- "Freq"
+  }
+  
+  p <- ggplot(cm_df, aes(x = Actual, y = Predicted, fill = .data[[fill_var]])) +
+    geom_tile(color = "white", linewidth = 1) +
+    geom_text(aes(label = Label), size = 5) +
+    scale_fill_gradient(low = colors[1], high = colors[2]) +
+    labs(
+      title = title,
+      subtitle = sprintf("Accuracy: %.1f%%", object$metrics["accuracy"] * 100),
+      x = "Actual",
+      y = "Predicted"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+      plot.title = element_text(hjust = 0.5, face = "bold"),
+      plot.subtitle = element_text(hjust = 0.5),
+      legend.position = "none",
+      panel.grid = element_blank()
+    )
+  
+  p
+}
+
+#' Plot Model Comparison
+#'
+#' @description
+#' Create comparison plot for multiple ML models.
+#'
+#' @param object A ukb_ml_compare object from ukb_ml_compare()
+#' @param metric Metric to highlight (default first available)
+#' @param type Plot type: "bar", "dot", or "radar"
+#' @param title Plot title
+#' @param ... Additional arguments
+#'
+#' @return A ggplot2 object
+#'
+#' @import ggplot2
+#' @export
+plot_ml_compare <- function(object,
+                            metric = NULL,
+                            type = c("bar", "dot"),
+                            title = "Model Comparison",
+                            ...) {
+  
+  if (!inherits(object, "ukb_ml_compare")) {
+    stop("object must be a ukb_ml_compare object")
+  }
+  
+  type <- match.arg(type)
+  comparison <- object$comparison
+  
+  # Reshape for plotting
+  metrics_cols <- setdiff(names(comparison), "model")
+  
+  plot_data <- data.frame()
+  for (m in metrics_cols) {
+    df <- data.frame(
+      model = comparison$model,
+      metric = m,
+      value = comparison[[m]],
+      stringsAsFactors = FALSE
+    )
+    plot_data <- rbind(plot_data, df)
+  }
+  
+  if (type == "bar") {
+    p <- ggplot(plot_data, aes(x = model, y = value, fill = metric)) +
+      geom_col(position = "dodge", width = 0.7) +
+      labs(
+        title = title,
+        x = NULL,
+        y = "Value",
+        fill = "Metric"
+      ) +
+      theme_minimal(base_size = 12) +
+      theme(
+        plot.title = element_text(hjust = 0.5, face = "bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "bottom"
+      )
+  } else {
+    p <- ggplot(plot_data, aes(x = model, y = value, color = metric, group = metric)) +
+      geom_point(size = 3) +
+      geom_line() +
+      labs(
+        title = title,
+        x = NULL,
+        y = "Value",
+        color = "Metric"
+      ) +
+      theme_minimal(base_size = 12) +
+      theme(
+        plot.title = element_text(hjust = 0.5, face = "bold"),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "bottom"
+      )
+  }
+  
+  p
+}
+
+#' Plot SHAP Summary
+#'
+#' @description
+#' Create SHAP summary plot (beeswarm or bar) for feature importance.
+#'
+#' @param object A ukb_shap object from ukb_shap()
+#' @param max_features Maximum features to display (default 20)
+#' @param type Plot type: "beeswarm" or "bar"
+#' @param color_palette Color palette for beeswarm (default "viridis")
+#' @param title Plot title
+#' @param ... Additional arguments
+#'
+#' @return A ggplot2 object
+#'
+#' @examples
+#' \dontrun{
+#' ml <- ukb_ml_model(outcome ~ ., data, model = "rf")
+#' shap <- ukb_shap(ml)
+#' plot_shap_summary(shap)
+#' }
+#'
+#' @import ggplot2
+#' @export
+plot_shap_summary <- function(object,
+                              max_features = 20,
+                              type = c("beeswarm", "bar"),
+                              color_palette = "viridis",
+                              title = "SHAP Summary",
+                              ...) {
+  
+  if (!inherits(object, "ukb_shap")) {
+    stop("object must be a ukb_shap object")
+  }
+  
+  type <- match.arg(type)
+  
+  # Get importance summary
+  summary_df <- ukb_shap_summary(object, n = max_features)
+  
+  if (type == "bar") {
+    summary_df$feature <- factor(
+      summary_df$feature,
+      levels = rev(summary_df$feature)
+    )
+    
+    p <- ggplot(summary_df, aes(x = feature, y = mean_abs_shap)) +
+      geom_col(fill = "#3182BD", width = 0.7) +
+      coord_flip() +
+      labs(
+        title = title,
+        x = NULL,
+        y = "Mean |SHAP Value|"
+      ) +
+      theme_minimal(base_size = 12) +
+      theme(
+        plot.title = element_text(hjust = 0.5, face = "bold")
+      )
+    
+  } else {
+    # Beeswarm plot
+    shap_vals <- object$shap_values
+    feature_vals <- object$feature_values
+    
+    # Get top features
+    top_features <- summary_df$feature[seq_len(min(max_features, length(summary_df$feature)))]
+    
+    # Prepare data for plotting
+    plot_data <- data.frame()
+    
+    for (feat in top_features) {
+      idx <- which(object$feature_names == feat)
+      
+      # Normalize feature values for color
+      fv <- as.numeric(feature_vals[[feat]])
+      fv_norm <- (fv - min(fv, na.rm = TRUE)) / (max(fv, na.rm = TRUE) - min(fv, na.rm = TRUE) + 1e-10)
+      
+      df <- data.frame(
+        feature = feat,
+        shap = shap_vals[, idx],
+        value_norm = fv_norm,
+        stringsAsFactors = FALSE
+      )
+      
+      plot_data <- rbind(plot_data, df)
+    }
+    
+    # Order features
+    plot_data$feature <- factor(
+      plot_data$feature,
+      levels = rev(top_features)
+    )
+    
+    p <- ggplot(plot_data, aes(x = feature, y = shap, color = value_norm)) +
+      geom_jitter(width = 0.2, alpha = 0.6, size = 1) +
+      scale_color_viridis_c(option = "D", name = "Feature Value\n(normalized)") +
+      coord_flip() +
+      geom_hline(yintercept = 0, linetype = "dashed", color = "gray50") +
+      labs(
+        title = title,
+        x = NULL,
+        y = "SHAP Value"
+      ) +
+      theme_minimal(base_size = 12) +
+      theme(
+        plot.title = element_text(hjust = 0.5, face = "bold"),
+        legend.position = "right"
+      )
+  }
+  
+  p
+}
+
+#' Plot SHAP Dependence
+#'
+#' @description
+#' Create SHAP dependence plot showing the relationship between
+#' a feature's value and its SHAP value.
+#'
+#' @param object A ukb_shap object
+#' @param feature Feature name to analyze
+#' @param color_feature Optional feature for coloring points (interaction)
+#' @param alpha Point transparency (default 0.5)
+#' @param smooth Add smooth line (default TRUE)
+#' @param title Plot title
+#' @param ... Additional arguments
+#'
+#' @return A ggplot2 object
+#'
+#' @import ggplot2
+#' @export
+plot_shap_dependence <- function(object,
+                                 feature,
+                                 color_feature = NULL,
+                                 alpha = 0.5,
+                                 smooth = TRUE,
+                                 title = NULL,
+                                 ...) {
+  
+  if (!inherits(object, "ukb_shap")) {
+    stop("object must be a ukb_shap object")
+  }
+  
+  # Get dependence data
+  dep_data <- ukb_shap_dependence(object, feature, color_feature)
+  
+  if (is.null(title)) {
+    title <- sprintf("SHAP Dependence: %s", feature)
+  }
+  
+  if (is.null(color_feature)) {
+    p <- ggplot(dep_data, aes(x = feature_value, y = shap_value)) +
+      geom_point(alpha = alpha, color = "#3182BD") +
+      geom_hline(yintercept = 0, linetype = "dashed", color = "gray50")
+    
+    if (smooth) {
+      p <- p + geom_smooth(method = "loess", color = "#E34A33", se = FALSE)
+    }
+  } else {
+    p <- ggplot(dep_data, aes(x = feature_value, y = shap_value, color = color_value)) +
+      geom_point(alpha = alpha) +
+      geom_hline(yintercept = 0, linetype = "dashed", color = "gray50") +
+      scale_color_viridis_c(name = color_feature)
+    
+    if (smooth) {
+      p <- p + geom_smooth(method = "loess", color = "black", se = FALSE)
+    }
+  }
+  
+  p <- p +
+    labs(
+      title = title,
+      x = feature,
+      y = "SHAP Value"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+      plot.title = element_text(hjust = 0.5, face = "bold")
+    )
+  
+  p
+}
+
+#' Plot SHAP Force (Waterfall)
+#'
+#' @description
+#' Create a waterfall plot showing feature contributions for a single prediction.
+#'
+#' @param object A ukb_shap object
+#' @param row_id Row index to explain (default 1)
+#' @param max_features Maximum features to show (default 10)
+#' @param title Plot title
+#' @param ... Additional arguments
+#'
+#' @return A ggplot2 object
+#'
+#' @import ggplot2
+#' @export
+plot_shap_force <- function(object,
+                            row_id = 1,
+                            max_features = 10,
+                            title = NULL,
+                            ...) {
+  
+  if (!inherits(object, "ukb_shap")) {
+    stop("object must be a ukb_shap object")
+  }
+  
+  # Get force data
+  force_data <- ukb_shap_force(object, row_id, max_features)
+  baseline <- attr(force_data, "baseline")
+  prediction <- attr(force_data, "prediction")
+  
+  if (is.null(title)) {
+    title <- sprintf("SHAP Explanation (Observation %d)", row_id)
+  }
+  
+  # Prepare waterfall data
+  force_data <- force_data[order(abs(force_data$shap), decreasing = FALSE), ]
+  force_data$direction <- ifelse(force_data$shap >= 0, "Positive", "Negative")
+  force_data$feature_label <- paste0(force_data$feature, " = ", force_data$value)
+  force_data$feature_label <- factor(force_data$feature_label, levels = force_data$feature_label)
+  
+  p <- ggplot(force_data, aes(x = feature_label, y = shap, fill = direction)) +
+    geom_col(width = 0.7) +
+    scale_fill_manual(values = c("Positive" = "#E34A33", "Negative" = "#3182BD")) +
+    coord_flip() +
+    geom_hline(yintercept = 0, color = "black") +
+    labs(
+      title = title,
+      subtitle = sprintf("Baseline: %.3f -> Prediction: %.3f", baseline, prediction),
+      x = NULL,
+      y = "SHAP Value",
+      fill = "Effect"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+      plot.title = element_text(hjust = 0.5, face = "bold"),
+      plot.subtitle = element_text(hjust = 0.5),
+      legend.position = "bottom"
+    )
+  
+  p
+}
+

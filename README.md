@@ -68,7 +68,49 @@ head(analysis_dt[, .(
 - **Propensity Score Methods**: PSM matching and IPTW weighting
 - **Mediation Analysis**: Causal mediation using regmedint backend
 - **MI Pooling**: Multiple imputation result combining (Rubin's Rules)
-- **Visualization**: Forest plots, K-M curves, balance plots, diagnostic plots
+- **Machine Learning**: Unified ML interface with SHAP interpretation
+- **Visualization**: Forest plots, K-M curves, balance plots, SHAP plots
+
+## Machine Learning Example
+
+```r
+library(UKBAnalytica)
+
+# Train a Random Forest classifier
+ml_rf <- ukb_ml_model(
+  diabetes ~ age + bmi + sbp + smoking,
+  data = ukb_data,
+  model = "rf",
+  task = "classification",
+  seed = 42
+)
+
+# Model evaluation
+print(ml_rf)  # AUC, accuracy, etc.
+ukb_ml_metrics(ml_rf, ci = TRUE)
+
+# ROC curve
+roc <- ukb_ml_roc(ml_rf)
+plot(roc)
+
+# SHAP interpretation (requires fastshap)
+shap <- ukb_shap(ml_rf, sample_n = 1000)
+plot_shap_summary(shap)
+plot_shap_dependence(shap, feature = "age")
+
+# Model comparison
+ml_xgb <- ukb_ml_model(diabetes ~ ., data, model = "xgboost")
+comparison <- ukb_ml_compare(ml_rf, ml_xgb)
+plot(comparison)
+
+# Survival ML
+surv_rf <- ukb_ml_survival(
+  Surv(time, event) ~ age + sex + bmi,
+  data = ukb_data,
+  model = "rsf"
+)
+print(surv_rf)  # C-index
+```
 
 ## Advanced Analysis Example
 
@@ -91,7 +133,6 @@ summary(pooled)
 
 # Mediation analysis
 med <- run_mediation(
-
   data = dt, exposure = "treatment", mediator = "biomarker",
   outcome = "event", outcome_type = "cox"
 )
@@ -99,5 +140,9 @@ plot_mediation(med, type = "effects")
 ```
 
 ## Supplementary Materials
+Here we provide some learning materials for UK Biobank in which you may be interested:
+- [UK Biobank database browser](https://biobank.ndph.ox.ac.uk/ukb/index.cgi)
+- [UK Biobank RAP platform](https://ukbiobank.dnanexus.com/landing)
+- [UK Biobank learning guides supported by our team](https://hinna0818.github.io/Bioinfo-SMU/Epidemiology/UK_Biobank/) 
 
 

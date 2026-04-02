@@ -43,7 +43,8 @@
 #' @import data.table
 #' @import ggplot2
 #' @importFrom stringi stri_extract_all_regex stri_trim_both
-#' @importFrom stats quantile relevel sd
+#' @importFrom stats quantile relevel sd terms model.matrix predict approx
+#' @importFrom utils head modifyList
 #' @importFrom grid unit
 #'
 "_PACKAGE"
@@ -71,5 +72,10 @@ utils::globalVariables(c(
   "pvalue", "sig", "name",
   # Multiple imputation module variables
   "term", "std.error", "statistic", "conf.low", "conf.high", "fmi",
-  "fmi_pct", "level"
+  "fmi_pct", "level",
+  # Machine learning module variables
+  "importance", "variable", "sensitivity", "specificity", "model",
+  "feature", "mean_abs_shap", "shap", "value_norm", "feature_value",
+  "shap_value", "color_value", "direction", "feature_label", "metric",
+  "Predicted", "Actual", "Freq", "Proportion", "Label"
 ))

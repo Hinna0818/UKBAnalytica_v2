@@ -83,3 +83,21 @@ The remaining chapters walk through each step with code examples.
 | `pool_mi_models()` | Pool results from multiple imputation |
 | `plot_forest()` | Forest plot visualization |
 | `plot_km_curve()` | Kaplan-Meier curves |
+
+## Machine learning functions
+
+| Function | Description |
+|:---------|:------------|
+| `ukb_ml_model()` | Train ML models (RF, XGBoost, GLMNet, SVM, NNet) |
+| `ukb_ml_predict()` | Generate predictions from ML model |
+| `ukb_ml_cv()` | Cross-validation for ML models |
+| `ukb_ml_compare()` | Compare multiple ML models |
+| `ukb_ml_metrics()` | Calculate performance metrics |
+| `ukb_ml_roc()` | ROC curve analysis |
+| `ukb_ml_calibration()` | Calibration curve analysis |
+| `ukb_ml_confusion()` | Confusion matrix |
+| `ukb_ml_importance()` | Variable importance |
+| `ukb_shap()` | Compute SHAP values |
+| `ukb_ml_survival()` | Survival ML models (RSF, GBM, CoxNet) |
+| `plot_shap_summary()` | SHAP summary plot |
+| `plot_shap_dependence()` | SHAP dependence plot |

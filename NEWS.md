@@ -1,5 +1,62 @@
 # UKBAnalytica News
 
+## UKBAnalytica 0.6.0 (2026-04-02)
+
+### New Module: Machine Learning
+
+#### Core ML Functions (`ml_model.R`)
+- `ukb_ml_model()`: Unified interface for training ML models
+  - Random Forest (`ranger`)
+  - XGBoost (`xgboost`)
+  - Elastic Net (`glmnet`)
+  - SVM (`e1071`)
+  - Neural Network (`nnet`)
+  - Logistic/Linear regression
+- `ukb_ml_predict()`: Generate predictions
+- `ukb_ml_cv()`: K-fold cross-validation with optional repeats
+- `ukb_ml_compare()`: Compare multiple models
+- `ukb_ml_importance()`: Extract variable importance
+
+#### Model Evaluation (`ml_evaluate.R`)
+- `ukb_ml_metrics()`: Compute performance metrics (AUC, accuracy, etc.)
+- `ukb_ml_roc()`: ROC curve analysis with CI
+- `ukb_ml_calibration()`: Calibration curve with Brier score and ECE
+- `ukb_ml_confusion()`: Confusion matrix
+
+#### SHAP Interpretation (`ml_shap.R`)
+- `ukb_shap()`: Compute SHAP values for model interpretation
+- `ukb_shap_summary()`: Feature importance from SHAP
+- `ukb_shap_dependence()`: Single feature SHAP analysis
+- `ukb_shap_force()`: Single observation explanation
+
+#### Survival ML (`ml_survival.R`)
+- `ukb_ml_survival()`: Survival machine learning models
+  - Random Survival Forest (`randomForestSRC`)
+  - GBM Survival (`gbm`)
+  - CoxNet regularized Cox (`glmnet`)
+- `ukb_ml_survival_predict()`: Survival probability prediction
+- `ukb_ml_survival_importance()`: Variable importance
+- `ukb_ml_survival_shap()`: SHAP for survival models
+
+#### Visualization
+- `plot_ml_importance()`: Variable importance bar/dot plot
+- `plot_ml_roc()`: ROC curve plot
+- `plot_ml_calibration()`: Calibration curve plot
+- `plot_ml_confusion()`: Confusion matrix heatmap
+- `plot_ml_compare()`: Model comparison plot
+- `plot_shap_summary()`: SHAP beeswarm/bar plot
+- `plot_shap_dependence()`: SHAP dependence plot
+- `plot_shap_force()`: SHAP waterfall plot
+
+### Dependencies (Suggests)
+- Added: `ranger`, `xgboost`, `glmnet`, `e1071`, `nnet`, `fastshap`, `pROC`, `randomForestSRC`
+
+### Documentation
+- Updated Advanced Analysis chapter with ML module
+- Updated README with ML examples
+
+---
+
 ## UKBAnalytica 0.5.0 (2026-04-01)
 
 ### New Modules: Advanced Statistical Analysis

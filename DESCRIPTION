@@ -1,6 +1,6 @@
 Package: UKBAnalytica
 Title: UK Biobank Data Processing and Survival Analysis Toolkit
-Version: 0.5.0
+Version: 0.6.0
 Authors@R: 
     person("Nan", "He", email = "nanh302311@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0009-0008-6932-3867"))
@@ -31,6 +31,14 @@ Suggests:
     MatchIt,
     regmedint,
     mitools,
-    MASS
+    MASS,
+    ranger,
+    xgboost,
+    glmnet,
+    e1071,
+    nnet,
+    fastshap,
+    pROC,
+    randomForestSRC
 Config/testthat/edition: 3
 Config/Needs/bioc: FALSE
