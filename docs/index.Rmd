@@ -2,7 +2,7 @@
 title: "UKBAnalytica: A Guide to UK Biobank Data Analysis"
 author:
 - name: "Nan He"
-  email: "hinna@i.smu.edu.cn"
+  email: "nanh302311@gmail.com"
   affiliation: "Department of Bioinformatics, School of Basic Medical Sciences, Southern Medical University"
 
 date: "`r Sys.Date()`"
@@ -18,7 +18,7 @@ github-repo: Hinna0818/UKBAnalytica
 ---
 
 # Introduction {#intro}
-![package-overview](https://raw.githubusercontent.com/Hinna0818/UKBAnalytica/main/man/figures/package-overview.png)
+![package-overview](docs/image.png)
 **UKBAnalytica** is a high-performance R package for processing UK Biobank (UKB)
 Research Analysis Platform (RAP) data exports. It provides efficient extraction
 of diagnosis records from multiple sources and generates Cox regression-ready

@@ -15,6 +15,9 @@ phenotyping, survival-ready datasets, and scalable preprocessing.
 
 **For details, please visit**: [Full documentation for UKBAnalytica](https://hinna0818.github.io/UKBAnalytica/)
 
+![](docs/image.png)
+
+
 ## Installation
 
 ```r
@@ -95,7 +98,6 @@ med <- run_mediation(
 plot_mediation(med, type = "effects")
 ```
 
-## License
+## Supplementary Materials
 
-MIT License © 2024 Nan He
 

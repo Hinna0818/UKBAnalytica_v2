@@ -27,3 +27,9 @@ tests/test_demo.R
 *~
 *.swp
 *.swo
+
+# wechat file
+wechat-article.md
+
+# prompt
+prompt.md
