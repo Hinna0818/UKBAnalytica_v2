@@ -19,8 +19,10 @@ phenotyping, survival-ready datasets, and scalable preprocessing.
 
 
 ## Installation
+You can install the development version of `UKBAnalytica` from GitHub with:
 
 ```r
+# install.packages("devtools")
 devtools::install_github("Hinna0818/UKBAnalytica")
 ```
 
@@ -63,7 +65,7 @@ head(analysis_dt[, .(
 - Survival analysis datasets with prevalent/incident classification
 - Baseline Table 1 summaries and multiple imputation
 
-### Advanced Analysis Modules (v0.5.0+)
+### Advanced Analysis Modules (v0.5.0+ supports)
 - **Subgroup Analysis**: Stratified analysis with interaction p-values
 - **Propensity Score Methods**: PSM matching and IPTW weighting
 - **Mediation Analysis**: Causal mediation using regmedint backend
