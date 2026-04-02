@@ -7,9 +7,7 @@
 [![Visits](https://hits.sh/github.com/Hinna0818/UKBAnalytica.svg)](https://hits.sh/github.com/Hinna0818/UKBAnalytica/)
 <!-- badges: end -->
 
-<p align="right">
-  <img src="man/figures/ukbanalytica-logo.svg" alt="UKBAnalytica logo" width="140" />
-</p>
+<img src="man/figures/logo.png" align="right" height="139" alt="UKBAnalytica logo" />
 
 **UKBAnalytica** is a high-performance R package for processing UK Biobank (UKB)
 Research Analysis Platform (RAP) data exports. It focuses on standardized
