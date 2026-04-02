@@ -508,8 +508,7 @@ print.mi_pooled_result <- function(x, digits = 3, ...) {
 
 #' @export
 summary.mi_pooled_result <- function(object, exponentiate = NULL, ...) {
-  cat("Multiple Imputation Results (Rubin's Rules)\n")
-  cat("============================================\n\n")
+  cat("Multiple Imputation Results (Rubin's Rules)\n\n")
 
   cat("Call:\n")
   print(object$call)

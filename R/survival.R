@@ -1,8 +1,3 @@
-# Suppress R CMD check NOTEs for data.table variables
-if(getRversion() >= "2.15.1") utils::globalVariables(c(
-  "i.status", "i.prevalent_case", "i.earliest_date", "i.diagnosis_source", "i.surv_time"
-))
-
 #' @title Build Survival Analysis Dataset
 #'
 #' @description

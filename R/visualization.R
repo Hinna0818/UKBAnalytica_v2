@@ -1,13 +1,3 @@
-# Suppress R CMD check NOTEs for ggplot2 NSE
-if (getRversion() >= "2.15.1") utils::globalVariables(c(
-  "subgroup", "estimate", "lower95", "upper95", "n_event", "n_total",
-  "ci_label", "x_pos", "ymin", "ymax", "time", "surv", "strata",
-  "n.risk", "n.event", "ps", "group", "method", "smd_before", "smd_after",
-  "observed", "predicted", "bin", "lower", "upper", "count", "variable",
-  "after_stat", "effect", "est", "label", "x", "y", "xend", "yend",
-  "effect_type", "tnie", "pnde", "proportion"
-))
-
 #' @importFrom stats relevel
 #' @importFrom ggplot2 ggplot aes geom_point geom_errorbarh geom_vline labs
 #'   theme_minimal theme element_text element_blank scale_x_log10
@@ -1069,9 +1059,7 @@ plot_mediation_forest <- function(multi_mediation_result,
 }
 
 
-# =============================================================================
 # Multiple Imputation Visualization Functions
-# =============================================================================
 
 #' Plot Multiple Imputation Pooled Results
 #'
@@ -1403,9 +1391,7 @@ plot_mi_diagnostics <- function(mi_result,
   return(p)
 }
 
-# ============================================================================
 # Machine Learning Visualization Functions
-# ============================================================================
 
 #' Plot Variable Importance
 #'

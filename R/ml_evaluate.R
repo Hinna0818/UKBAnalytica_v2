@@ -7,9 +7,7 @@
 #' @keywords internal
 NULL
 
-# ============================================================================
 # Metrics Function
-# ============================================================================
 
 #' Calculate Model Performance Metrics
 #'
@@ -176,9 +174,7 @@ ukb_ml_metrics <- function(object,
   ci_list
 }
 
-# ============================================================================
 # ROC Curve
-# ============================================================================
 
 #' ROC Curve Analysis
 #'
@@ -285,14 +281,12 @@ ukb_ml_roc <- function(object,
 #' @export
 print.ukb_ml_roc <- function(x, ...) {
   cat("\nROC Analysis Results\n")
-  cat("====================\n")
+  cat("\n")
   print(x$auc, row.names = FALSE)
   invisible(x)
 }
 
-# ============================================================================
 # Calibration Curve
-# ============================================================================
 
 #' Calibration Curve Analysis
 #'
@@ -407,7 +401,7 @@ ukb_ml_calibration <- function(object,
 #' @export
 print.ukb_ml_calibration <- function(x, ...) {
   cat("\nCalibration Analysis\n")
-  cat("====================\n")
+  cat("\n")
   cat(sprintf("Brier Score: %.4f\n", x$brier_score))
   cat(sprintf("Expected Calibration Error: %.4f\n", x$ece))
   cat("\nCalibration by bin:\n")
@@ -415,9 +409,7 @@ print.ukb_ml_calibration <- function(x, ...) {
   invisible(x)
 }
 
-# ============================================================================
 # Confusion Matrix
-# ============================================================================
 
 #' Confusion Matrix
 #'
@@ -492,7 +484,7 @@ ukb_ml_confusion <- function(object,
 #' @export
 print.ukb_ml_confusion <- function(x, ...) {
   cat("\nConfusion Matrix (threshold =", x$threshold, ")\n")
-  cat("========================================\n")
+  cat("\n")
   print(x$confusion_matrix)
   cat("\nMetrics:\n")
   for (m in names(x$metrics)) {

@@ -8,12 +8,6 @@
 #' @keywords internal
 NULL
 
-# Declare global variables to avoid R CMD check NOTEs
-utils::globalVariables(c(
-  "fruit_score", "vegetable_score", "fish_score", "meat_score", "diet_score",
-  "p1289_i0", "p1299_i0", "p1309_i0", "p1319_i0", "p1329_i0", "p1339_i0"
-))
-
 # Variable Mapping Table
 
 #' Get default variable to UKB field ID mapping

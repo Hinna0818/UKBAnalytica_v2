@@ -8,9 +8,7 @@
 #' @keywords internal
 NULL
 
-# ============================================================================
 # Main SHAP Computation
-# ============================================================================
 
 #' Compute SHAP Values
 #'
@@ -168,9 +166,7 @@ ukb_shap <- function(object,
   }
 }
 
-# ============================================================================
 # SHAP Summary
-# ============================================================================
 
 #' SHAP Summary Statistics
 #'
@@ -207,9 +203,7 @@ ukb_shap_summary <- function(object, n = 20, ...) {
   importance
 }
 
-# ============================================================================
 # SHAP Dependence
-# ============================================================================
 
 #' SHAP Dependence Values
 #'
@@ -250,9 +244,7 @@ ukb_shap_dependence <- function(object, feature, color_feature = NULL, ...) {
   dep_data
 }
 
-# ============================================================================
 # SHAP Force Plot Data
-# ============================================================================
 #' SHAP Force Plot Data
 #'
 #' @description
@@ -295,15 +287,13 @@ ukb_shap_force <- function(object, row_id = 1, max_features = 10, ...) {
   force_data
 }
 
-# ============================================================================
 # S3 Methods
-# ============================================================================
 
 #' @export
 print.ukb_shap <- function(x, ...) {
   cat("\n")
   cat("SHAP Explanation Object\n")
-  cat("=======================\n")
+  cat("\n")
   cat(sprintf("Observations: %d\n", nrow(x$shap_values)))
   cat(sprintf("Features: %d\n", ncol(x$shap_values)))
   cat(sprintf("Baseline: %.4f\n", x$baseline))

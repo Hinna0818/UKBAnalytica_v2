@@ -1,10 +1,3 @@
-# Suppress R CMD check NOTEs for data.table variables
-if (getRversion() >= "2.15.1") utils::globalVariables(c(
-
-  "effect", "est", "se", "lower", "upper", "p", "exp_est", "exp_lower", "exp_upper",
-  "mediator", "tnie", "pnde", "te", "pm"
-))
-
 #' Run Causal Mediation Analysis
 #'
 #' @description
@@ -515,9 +508,9 @@ run_sensitivity_mediation <- function(mediation_result,
 summary.mediation_result <- function(object, exponentiate = FALSE, ...) {
 
   cat("\n")
-  cat("=======================================================\n")
-  cat("          Causal Mediation Analysis Results            \n")
-  cat("=======================================================\n\n")
+  cat("\n")
+  cat("Causal Mediation Analysis Results\n")
+  cat("\n")
 
   params <- object$params
 

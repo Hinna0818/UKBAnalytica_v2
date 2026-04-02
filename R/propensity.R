@@ -1,9 +1,3 @@
-# Suppress R CMD check NOTEs for data.table variables
-if (getRversion() >= "2.15.1") utils::globalVariables(c(
-  "ps", "weight", "match_id", "match_distance", "..covariates",
-  "mean_treated", "mean_control", "smd", "balanced"
-))
-
 #' Estimate Propensity Score
 #'
 #' @description

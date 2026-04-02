@@ -49,8 +49,10 @@
 #'
 "_PACKAGE"
 
-# Global variables declaration to pass R CMD check
+# Global variables declaration (centralized)
+# All NSE variables used in data.table and ggplot2 expressions
 utils::globalVariables(c(
+  # Core parsing module
   ".", "eid", "idx", "icd10_code", "icd9_code", "sr_code", "death_code",
   "diag_date", "diag_year", "death_date", "source", "disease",
   "earliest_date", "col_name", "date_col", "col", "instance", "array_idx",
@@ -58,7 +60,10 @@ utils::globalVariables(c(
   "prevalent_case", "diagnosis_source", "p41270", "p41271",
   "default_surv_time", "control_surv_time", "primary_outcome_prevalent",
   "outcome_status", "outcome_surv_time", "outcome_prevalent",
-  # New variables for subgroup/propensity/visualization modules
+  # Survival module
+
+  "i.status", "i.prevalent_case", "i.earliest_date", "i.diagnosis_source", "i.surv_time",
+  # Subgroup/propensity module
   "subgroup_var_name", "subgroup_level", "n_total", "n_event",
   "ps", "weight", "match_id", "match_distance", "..covariates",
   "mean_treated", "mean_control", "smd", "balanced",
@@ -66,14 +71,21 @@ utils::globalVariables(c(
   "ymin", "ymax", "time", "surv", "strata", "n.risk", "n.event",
   "group", "method", "smd_before", "smd_after",
   "observed", "predicted", "bin", "lower", "upper", "count",
-  # Mediation analysis module variables
+  # Correlation module
+  "Var1", "Var2", "Correlation", "label",
+  # Variable preprocess module
+  "fruit_score", "vegetable_score", "fish_score", "meat_score", "diet_score",
+  "p1289_i0", "p1299_i0", "p1309_i0", "p1319_i0", "p1329_i0", "p1339_i0",
+  # Mediation module
   "effect", "effect_label", "color_group", "est", "p", "p_label",
   "effect_type", "value", "abs_value", "proportion", "mediator", "se",
-  "pvalue", "sig", "name",
-  # Multiple imputation module variables
+  "pvalue", "sig", "name", "tnie", "pnde", "te", "pm", "exp_est", "exp_lower", "exp_upper",
+  # Multiple imputation module
   "term", "std.error", "statistic", "conf.low", "conf.high", "fmi",
   "fmi_pct", "level",
-  # Machine learning module variables
+  # Visualization module
+  "after_stat", "x", "y", "xend", "yend",
+  # Machine learning module
   "importance", "variable", "sensitivity", "specificity", "model",
   "feature", "mean_abs_shap", "shap", "value_norm", "feature_value",
   "shap_value", "color_value", "direction", "feature_label", "metric",

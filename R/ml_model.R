@@ -9,9 +9,7 @@
 #' @keywords internal
 NULL
 
-# ============================================================================
 # Helper Functions
-# ============================================================================
 
 #' Check if ML package is available
 #' @keywords internal
@@ -113,9 +111,7 @@ if (length(predictors) == 1 && predictors == ".") {
   list(train_idx = train_idx, test_idx = test_idx)
 }
 
-# ============================================================================
 # Main Model Training Function
-# ============================================================================
 
 #' Train a Machine Learning Model
 #'
@@ -267,9 +263,7 @@ ukb_ml_model <- function(formula,
   result
 }
 
-# ============================================================================
 # Model Fitting Functions
-# ============================================================================
 
 #' Fit Random Forest
 #' @keywords internal
@@ -455,9 +449,7 @@ ukb_ml_model <- function(formula,
   }
 }
 
-# ============================================================================
 # Prediction Function
-# ============================================================================
 
 #' Predict from ML Model
 #'
@@ -604,9 +596,7 @@ ukb_ml_predict.ukb_ml <- function(object, newdata = NULL, type = c("response", "
   }
 }
 
-# ============================================================================
 # Variable Importance
-# ============================================================================
 
 #' Get Variable Importance
 #'
@@ -672,9 +662,7 @@ ukb_ml_importance <- function(object, type = NULL, ...) {
   importance
 }
 
-# ============================================================================
 # Cross-Validation
-# ============================================================================
 
 #' Cross-Validation for ML Models
 #'
@@ -887,9 +875,7 @@ ukb_ml_cv <- function(formula,
   result
 }
 
-# ============================================================================
 # Model Comparison
-# ============================================================================
 
 #' Compare Multiple ML Models
 #'
@@ -979,15 +965,13 @@ ukb_ml_compare <- function(...,
   result
 }
 
-# ============================================================================
 # S3 Methods
-# ============================================================================
 
 #' @export
 print.ukb_ml <- function(x, ...) {
   cat("\n")
   cat("UKB Machine Learning Model\n")
-  cat("==========================\n")
+  cat("\n")
   cat(sprintf("Model: %s\n", .get_model_label(x$model_type)))
   cat(sprintf("Task: %s\n", x$task))
   cat(sprintf("Outcome: %s\n", x$outcome))
@@ -1028,7 +1012,7 @@ predict.ukb_ml <- function(object, newdata = NULL, type = "response", ...) {
 print.ukb_ml_cv <- function(x, ...) {
   cat("\n")
   cat("UKB ML Cross-Validation Results\n")
-  cat("================================\n")
+  cat("\n")
   cat(sprintf("Model: %s\n", .get_model_label(x$model)))
   cat(sprintf("Folds: %d, Repeats: %d\n", x$folds, x$repeats))
   cat("\nMetrics (Mean +/- SD):\n")
@@ -1042,7 +1026,7 @@ print.ukb_ml_cv <- function(x, ...) {
 print.ukb_ml_compare <- function(x, ...) {
   cat("\n")
   cat("UKB ML Model Comparison\n")
-  cat("=======================\n")
+  cat("\n")
   print(x$comparison, row.names = FALSE)
   invisible(x)
 }

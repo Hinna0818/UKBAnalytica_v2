@@ -1,8 +1,3 @@
-# Suppress R CMD check NOTEs for data.table variables
-if (getRversion() >= "2.15.1") utils::globalVariables(c(
-  "subgroup_var_name", "subgroup_level", "n_total", "n_event"
-))
-
 #' @importFrom stats relevel anova pchisq
 NULL
 

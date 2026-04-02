@@ -10,9 +10,6 @@
 #' @export
 #' @name run_correlation
 
-# Suppress R CMD check NOTEs for ggplot2 NSE
-if(getRversion() >= "2.15.1") utils::globalVariables(c("Var1", "Var2", "Correlation", "label"))
-
 run_correlation <- function(df,
                             vars,
                             method = "pearson",

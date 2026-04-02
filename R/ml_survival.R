@@ -8,9 +8,7 @@
 #' @keywords internal
 NULL
 
-# ============================================================================
 # Main Survival ML Function
-# ============================================================================
 
 #' Train Survival Machine Learning Model
 #'
@@ -136,9 +134,7 @@ ukb_ml_survival <- function(formula,
   result
 }
 
-# ============================================================================
 # Model Fitting Functions
-# ============================================================================
 
 #' Fit Random Survival Forest
 #' @keywords internal
@@ -210,9 +206,7 @@ ukb_ml_survival <- function(formula,
   ))
 }
 
-# ============================================================================
 # Prediction Function
-# ============================================================================
 
 #' Predict from Survival ML Model
 #'
@@ -346,9 +340,7 @@ ukb_ml_survival_predict <- function(object,
   surv_mat
 }
 
-# ============================================================================
 # C-index Calculation
-# ============================================================================
 
 #' @keywords internal
 .calculate_c_index <- function(object, test_data) {
@@ -371,9 +363,7 @@ ukb_ml_survival_predict <- function(object,
   conc$concordance
 }
 
-# ============================================================================
 # Variable Importance for Survival
-# ============================================================================
 
 #' Get Variable Importance for Survival Model
 #'
@@ -422,9 +412,7 @@ ukb_ml_survival_importance <- function(object, ...) {
   importance
 }
 
-# ============================================================================
 # SHAP for Survival Models
-# ============================================================================
 
 #' SHAP Values for Survival Models
 #'
@@ -512,15 +500,13 @@ ukb_ml_survival_shap <- function(object,
   result
 }
 
-# ============================================================================
 # S3 Methods
-# ============================================================================
 
 #' @export
 print.ukb_ml_surv <- function(x, ...) {
   cat("\n")
   cat("UKB Survival Machine Learning Model\n")
-  cat("====================================\n")
+  cat("\n")
   cat(sprintf("Model: %s\n", x$model_type))
   cat(sprintf("Time variable: %s\n", x$time_var))
   cat(sprintf("Event variable: %s\n", x$event_var))
