@@ -153,8 +153,8 @@ get_predefined_diseases <- function() {
     ),
     COPD = create_disease_definition(
       name = "Chronic Obstructive Pulmonary Disease",
-      icd10_pattern = "^(J41|J42|J43|J44)",
-      icd9_pattern = "^(491|492|496)",
+      icd10_pattern = "^(J40|J41|J42|J43|J44)",
+      icd9_pattern = "^(491|492|4932|496)",
       sr_codes = c(1112, 1113, 1472)
     ),
 
