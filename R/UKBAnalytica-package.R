@@ -60,6 +60,12 @@ utils::globalVariables(c(
   "prevalent_case", "diagnosis_source", "p41270", "p41271",
   "default_surv_time", "control_surv_time", "primary_outcome_prevalent",
   "outcome_status", "outcome_surv_time", "outcome_prevalent",
+  # Algorithm and spirometry module
+  "algo_date",
+  "COPD_prevalent", "COPD_prevalent_icd", "COPD_prevalent_spirometry",
+  "COPD_prevalent_source", "COPD_incident", "COPD_spirometry", "COPD_gold_grade",
+  "default_end", "incident_surv_time",
+  "fev1", "fvc", "fev1_fvc_ratio", "fev1_predicted_pct", "obstruction",
   # Survival module
 
   "i.status", "i.prevalent_case", "i.earliest_date", "i.diagnosis_source", "i.surv_time",

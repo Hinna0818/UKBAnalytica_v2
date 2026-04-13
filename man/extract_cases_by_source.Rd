@@ -18,7 +18,10 @@ extract_cases_by_source(
 \item{disease_definitions}{Named list of disease definitions.}
 
 \item{sources}{Character vector specifying data sources to include.
-Valid options: "ICD10", "ICD9", "Self-report", "Death".}
+Valid options: "ICD10", "ICD9", "Self-report", "Death", "Algorithm".
+"Algorithm" uses UK Biobank algorithmically-defined outcomes (Category 42)
+which combine multiple data sources with high positive predictive value.
+Requires \code{algo_date_field} in the disease definition.}
 
 \item{censor_date}{Administrative censoring date.}
 
@@ -38,7 +41,14 @@ This function is designed for epidemiological studies requiring:
 \item Main analysis with hospital-confirmed diagnoses only
 \item Sensitivity analyses including self-reported conditions
 \item Source-specific case counts for methods reporting
+\item UK Biobank algorithmically-defined outcomes for validated case ascertainment
 }
+
+The "Algorithm" source reads date fields from UK Biobank Category 42
+(Algorithmically-defined outcomes). These are pre-computed by the UK Biobank
+outcome adjudication group, combining self-report, hospital admissions,
+and death records with high positive predictive value.
+Records with date \code{1900-01-01} are excluded (date unknown).
 }
 \examples{
 \dontrun{
@@ -47,9 +57,9 @@ diseases <- get_predefined_diseases()[c("AA", "Hypertension")]
 # Main analysis: ICD-10 only
 main <- extract_cases_by_source(dt, diseases, sources = "ICD10")
 
-# Sensitivity: All sources
+# Sensitivity: All sources including algorithm
 sens <- extract_cases_by_source(dt, diseases,
-                                 sources = c("ICD10", "ICD9", "Self-report"))
+                                 sources = c("ICD10", "ICD9", "Self-report", "Algorithm"))
 }
 
 }

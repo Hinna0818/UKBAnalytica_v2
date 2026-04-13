@@ -62,19 +62,19 @@ Uses UK Biobank fields:
 The modified GOLD criteria used by most UK Biobank studies:
 \itemize{
 \item \strong{Any airflow obstruction}: FEV1/FVC < 0.7
-\item \strong{Moderate-to-severe (default)}: FEV1/FVC < 0.7 AND FEV1 < 80\\% predicted
+\item \strong{Moderate-to-severe (default)}: FEV1/FVC < 0.7 AND FEV1 < 80\% predicted
 }
 
 GOLD severity grades (when \code{include_severity = TRUE}):
 \itemize{
-\item \strong{GOLD 1 (Mild)}: FEV1/FVC < 0.7, FEV1 >= 80\\% predicted
-\item \strong{GOLD 2 (Moderate)}: FEV1/FVC < 0.7, 50\\% <= FEV1 < 80\\% predicted
-\item \strong{GOLD 3 (Severe)}: FEV1/FVC < 0.7, 30\\% <= FEV1 < 50\\% predicted
-\item \strong{GOLD 4 (Very Severe)}: FEV1/FVC < 0.7, FEV1 < 30\\% predicted
+\item \strong{GOLD 1 (Mild)}: FEV1/FVC < 0.7, FEV1 >= 80\% predicted
+\item \strong{GOLD 2 (Moderate)}: FEV1/FVC < 0.7, 50\% <= FEV1 < 80\% predicted
+\item \strong{GOLD 3 (Severe)}: FEV1/FVC < 0.7, 30\% <= FEV1 < 50\% predicted
+\item \strong{GOLD 4 (Very Severe)}: FEV1/FVC < 0.7, FEV1 < 30\% predicted
 }
 
 Controls are defined as participants with \strong{normal} spirometry
-(FEV1/FVC >= 0.7 and FEV1 >= 80\\% predicted when \code{fev1_pred_col} is provided).
+(FEV1/FVC >= 0.7 and FEV1 >= 80\% predicted when \code{fev1_pred_col} is provided).
 Participants with missing or invalid spirometry data receive \code{NA}.
 
 Note: UK Biobank spirometry is pre-bronchodilator, which may overestimate COPD

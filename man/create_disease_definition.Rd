@@ -8,7 +8,8 @@ create_disease_definition(
   name,
   icd10_pattern = NULL,
   icd9_pattern = NULL,
-  sr_codes = NULL
+  sr_codes = NULL,
+  algo_date_field = NULL
 )
 }
 \arguments{
@@ -19,13 +20,19 @@ create_disease_definition(
 \item{icd9_pattern}{Regular expression pattern for ICD-9 codes (optional).}
 
 \item{sr_codes}{Integer vector of UKB self-report illness codes (optional).}
+
+\item{algo_date_field}{Integer. UKB field ID for the algorithmically-defined
+outcome date (Category 42). For example, 42016 for COPD, 42014 for Asthma.
+The corresponding data column is expected as \code{p{field}_i0}.
+Records with date \code{1900-01-01} are treated as unknown and excluded.}
 }
 \value{
 A list containing the disease definition parameters.
 }
 \description{
 Helper function to create a standardized disease definition object
-containing ICD-10/ICD-9 patterns and self-report codes.
+containing ICD-10/ICD-9 patterns, self-report codes, and optionally
+a UK Biobank algorithmically-defined outcome date field.
 }
 \examples{
 \dontrun{
@@ -33,6 +40,14 @@ aa_def <- create_disease_definition(
   name = "Aortic Aneurysm",
   icd10_pattern = "^I71",
   icd9_pattern = "^441"
+)
+
+copd_def <- create_disease_definition(
+  name = "COPD",
+  icd10_pattern = "^(J40|J41|J42|J43|J44)",
+  icd9_pattern = "^(491|492|4932|496)",
+  sr_codes = c(1112, 1113, 1472),
+  algo_date_field = 42016
 )
 }
 

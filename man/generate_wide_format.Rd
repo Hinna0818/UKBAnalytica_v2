@@ -19,7 +19,10 @@ generate_wide_format(
 \item{disease_definitions}{Named list of disease definitions.}
 
 \item{sources}{Character vector specifying data sources to include.
-Valid options: "ICD10", "ICD9", "Self-report", "Death".}
+Valid options: "ICD10", "ICD9", "Self-report", "Death", "Algorithm".
+"Algorithm" uses UK Biobank algorithmically-defined outcomes (Category 42)
+which combine multiple data sources with high positive predictive value.
+Requires \code{algo_date_field} in the disease definition.}
 
 \item{censor_date}{Administrative censoring date.}
 

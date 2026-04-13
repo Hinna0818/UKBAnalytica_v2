@@ -24,7 +24,8 @@ build_survival_dataset(
 \item{prevalent_sources}{Character vector specifying data sources for identifying
 prevalent (baseline) cases. Self-report is recommended here since participants
 reporting a disease at baseline clearly had it before enrollment. Default includes
-all sources: "ICD10", "ICD9", "Self-report", "Death".}
+all sources: "ICD10", "ICD9", "Self-report", "Death".
+Also supports "Algorithm" for UK Biobank algorithmically-defined outcomes.}
 
 \item{outcome_sources}{Character vector specifying data sources for defining
 incident outcomes. Self-report is typically excluded here because self-reported
@@ -56,10 +57,10 @@ A data.table with columns:
 }
 }
 \description{
-Integrates diagnosis data from multiple sources (ICD-10, ICD-9, self-report, death)
-to generate a survival dataset. By default, returns a wide table that retains
-all participants and adds disease history/incident indicators plus follow-up
-time for a primary disease.
+Integrates diagnosis data from multiple sources (ICD-10, ICD-9, self-report,
+death, algorithm) to generate a survival dataset. By default, returns a wide
+table that retains all participants and adds disease history/incident indicators
+plus follow-up time for a primary disease.
 }
 \details{
 This function supports separate source definitions for prevalent case exclusion

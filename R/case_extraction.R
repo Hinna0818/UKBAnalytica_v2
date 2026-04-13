@@ -8,7 +8,10 @@
 #' @param dt A data.table or data.frame containing complete UKB data.
 #' @param disease_definitions Named list of disease definitions.
 #' @param sources Character vector specifying data sources to include.
-#'   Valid options: "ICD10", "ICD9", "Self-report", "Death".
+#'   Valid options: "ICD10", "ICD9", "Self-report", "Death", "Algorithm".
+#'   "Algorithm" uses UK Biobank algorithmically-defined outcomes (Category 42)
+#'   which combine multiple data sources with high positive predictive value.
+#'   Requires \code{algo_date_field} in the disease definition.
 #' @param censor_date Administrative censoring date.
 #' @param baseline_col Column name for baseline assessment date.
 #'
@@ -20,7 +23,14 @@
 #'   \item Main analysis with hospital-confirmed diagnoses only
 #'   \item Sensitivity analyses including self-reported conditions
 #'   \item Source-specific case counts for methods reporting
+#'   \item UK Biobank algorithmically-defined outcomes for validated case ascertainment
 #' }
+#'
+#' The "Algorithm" source reads date fields from UK Biobank Category 42
+#' (Algorithmically-defined outcomes). These are pre-computed by the UK Biobank
+#' outcome adjudication group, combining self-report, hospital admissions,
+#' and death records with high positive predictive value.
+#' Records with date \code{1900-01-01} are excluded (date unknown).
 #'
 #' @examples
 #' \dontrun{
@@ -29,9 +39,9 @@
 #' # Main analysis: ICD-10 only
 #' main <- extract_cases_by_source(dt, diseases, sources = "ICD10")
 #'
-#' # Sensitivity: All sources
+#' # Sensitivity: All sources including algorithm
 #' sens <- extract_cases_by_source(dt, diseases,
-#'                                  sources = c("ICD10", "ICD9", "Self-report"))
+#'                                  sources = c("ICD10", "ICD9", "Self-report", "Algorithm"))
 #' }
 #'
 #' @import data.table
@@ -42,7 +52,7 @@ extract_cases_by_source <- function(dt,
                                      censor_date = as.Date("2023-10-31"),
                                      baseline_col = "p53_i0") {
 
-  valid_sources <- c("ICD10", "ICD9", "Self-report", "Death")
+  valid_sources <- c("ICD10", "ICD9", "Self-report", "Death", "Algorithm")
   sources <- match.arg(sources, valid_sources, several.ok = TRUE)
 
   if (!data.table::is.data.table(dt)) {
@@ -87,6 +97,23 @@ extract_cases_by_source <- function(dt,
     if ("Death" %in% sources && !is.null(def$icd10_pattern) && nrow(death_long) > 0) {
       filtered <- filter_death_codes(death_long, def$icd10_pattern, disease_key)
       if (nrow(filtered) > 0) diagnosis_sources$death <- aggregate_death_as_diagnosis(filtered)
+    }
+
+    # Algorithm source: UK Biobank algorithmically-defined outcomes (Category 42)
+    if ("Algorithm" %in% sources && !is.null(def$algo_date_field)) {
+      algo_col <- paste0("p", def$algo_date_field, "_i0")
+      if (algo_col %in% names(dt)) {
+        algo_dt <- dt[, .(eid, algo_date = as.Date(get(algo_col)))]
+        # Exclude 1900-01-01 (date unknown) and NA
+        algo_dt <- algo_dt[!is.na(algo_date) & algo_date != as.Date("1900-01-01")]
+        if (nrow(algo_dt) > 0) {
+          algo_dt[, `:=`(disease = disease_key, earliest_date = algo_date, source = "Algorithm")]
+          algo_dt[, algo_date := NULL]
+          diagnosis_sources$algo <- algo_dt
+        }
+      } else {
+        message(sprintf("  [Algorithm] Column '%s' not found for %s, skipping", algo_col, disease_key))
+      }
     }
 
     if (length(diagnosis_sources) == 0) return(NULL)
@@ -497,7 +524,7 @@ prepare_analysis_dataset <- function(dt,
 #' @param disease_definitions Named list of disease definitions. If NULL,
 #'   uses \code{\link{get_predefined_diseases}}.
 #' @param sources Character vector specifying data sources.
-#'   Default: "ICD10". Options: "ICD10", "ICD9", "Self-report", "Death".
+#'   Default: "ICD10". Options: "ICD10", "ICD9", "Self-report", "Death", "Algorithm".
 #' @param baseline_col Column name for baseline assessment date.
 #'
 #' @return A data.table with columns:
@@ -550,7 +577,7 @@ extract_disease_history <- function(dt,
     stop("'diseases' must be a non-empty character vector")
   }
 
-  valid_sources <- c("ICD10", "ICD9", "Self-report", "Death")
+  valid_sources <- c("ICD10", "ICD9", "Self-report", "Death", "Algorithm")
   sources <- match.arg(sources, valid_sources, several.ok = TRUE)
 
   if (!data.table::is.data.table(dt)) {
@@ -747,19 +774,19 @@ extract_disease_history_sensitivity <- function(dt,
 #' The modified GOLD criteria used by most UK Biobank studies:
 #' \itemize{
 #'   \item \strong{Any airflow obstruction}: FEV1/FVC < 0.7
-#'   \item \strong{Moderate-to-severe (default)}: FEV1/FVC < 0.7 AND FEV1 < 80\% predicted
+#'   \item \strong{Moderate-to-severe (default)}: FEV1/FVC < 0.7 AND FEV1 < 80% predicted
 #' }
 #'
 #' GOLD severity grades (when \code{include_severity = TRUE}):
 #' \itemize{
-#'   \item \strong{GOLD 1 (Mild)}: FEV1/FVC < 0.7, FEV1 >= 80\% predicted
-#'   \item \strong{GOLD 2 (Moderate)}: FEV1/FVC < 0.7, 50\% <= FEV1 < 80\% predicted
-#'   \item \strong{GOLD 3 (Severe)}: FEV1/FVC < 0.7, 30\% <= FEV1 < 50\% predicted
-#'   \item \strong{GOLD 4 (Very Severe)}: FEV1/FVC < 0.7, FEV1 < 30\% predicted
+#'   \item \strong{GOLD 1 (Mild)}: FEV1/FVC < 0.7, FEV1 >= 80% predicted
+#'   \item \strong{GOLD 2 (Moderate)}: FEV1/FVC < 0.7, 50% <= FEV1 < 80% predicted
+#'   \item \strong{GOLD 3 (Severe)}: FEV1/FVC < 0.7, 30% <= FEV1 < 50% predicted
+#'   \item \strong{GOLD 4 (Very Severe)}: FEV1/FVC < 0.7, FEV1 < 30% predicted
 #' }
 #'
 #' Controls are defined as participants with \strong{normal} spirometry
-#' (FEV1/FVC >= 0.7 and FEV1 >= 80\% predicted when \code{fev1_pred_col} is provided).
+#' (FEV1/FVC >= 0.7 and FEV1 >= 80% predicted when \code{fev1_pred_col} is provided).
 #' Participants with missing or invalid spirometry data receive \code{NA}.
 #'
 #' Note: UK Biobank spirometry is pre-bronchodilator, which may overestimate COPD
@@ -916,23 +943,9 @@ extract_spirometry_copd <- function(dt,
 #' @title Extract Combined COPD Definition (ICD + Spirometry) with Survival Data
 #'
 #' @description
-#' One-step COPD extraction combining ICD codes, self-report, and spirometry,
-#' with full prevalent/incident classification for survival analysis.
-#'
-#' \strong{Prevalent (history) COPD} is identified by the union of:
-#' \itemize{
-#'   \item ICD-10/ICD-9 codes dated before baseline
-#'   \item Self-reported COPD/emphysema/chronic bronchitis
-#'   \item Spirometry obstruction at baseline (FEV1/FVC < 0.7)
-#' }
-#'
-#' \strong{Incident (prospective) COPD} is identified by:
-#' \itemize{
-#'   \item ICD-10/ICD-9 codes dated after baseline
-#'   \item Death registry codes
-#'   \item (Spirometry cannot define incident cases — measured only at baseline)
-#' }
-#'
+#' One-step COPD extraction combining ICD codes, self-report, spirometry, and
+#' optionally UK Biobank algorithmically-defined outcomes, with full
+#' prevalent/incident classification for survival analysis.
 #' Output format aligns with \code{\link{build_survival_dataset}}.
 #'
 #' @param dt A data.table or data.frame containing UKB data.
@@ -940,9 +953,11 @@ extract_spirometry_copd <- function(dt,
 #'   predefined definitions. Must contain a \code{"COPD"} entry.
 #' @param prevalent_sources Character vector of sources for prevalent case
 #'   identification. Default: \code{c("ICD10", "ICD9", "Self-report")}.
+#'   Add \code{"Algorithm"} to include UK Biobank algorithmically-defined outcomes.
 #' @param outcome_sources Character vector of sources for incident outcome
 #'   ascertainment. Default: \code{c("ICD10", "ICD9", "Death")}.
 #'   Self-report is excluded because follow-up dates are imprecise.
+#'   Add \code{"Algorithm"} to include UK Biobank algorithmically-defined outcomes.
 #' @param censor_date Administrative censoring date. Default: \code{as.Date("2023-10-31")}.
 #' @param baseline_col Column name for baseline assessment date. Default: \code{"p53_i0"}.
 #' @param fev1_col Column name for FEV1. Default: \code{"p20150_i0"}.
@@ -950,7 +965,7 @@ extract_spirometry_copd <- function(dt,
 #' @param fev1_pred_col Column name for FEV1 predicted percentage.
 #'   Default: \code{"p20154_i0"}. Set \code{NULL} to skip FEV1% filter.
 #' @param ratio_threshold FEV1/FVC ratio threshold. Default: \code{0.7}.
-#' @param fev1_pred_threshold FEV1 predicted \% threshold. Default: \code{80}.
+#' @param fev1_pred_threshold FEV1 predicted percent threshold. Default: \code{80}.
 #'   Set \code{NULL} for any airflow obstruction (GOLD 1+).
 #' @param include_severity Logical. Include GOLD severity grade column. Default: \code{FALSE}.
 #'
@@ -968,11 +983,21 @@ extract_spirometry_copd <- function(dt,
 #'     \item{outcome_surv_time}{Numeric/NA — follow-up time in years.
 #'       NA for prevalent cases.}
 #'     \item{fev1_fvc_ratio}{FEV1/FVC ratio (numeric)}
-#'     \item{fev1_predicted_pct}{FEV1 predicted \% (numeric)}
+#'     \item{fev1_predicted_pct}{FEV1 predicted percent (numeric)}
 #'     \item{COPD_gold_grade}{(Optional) GOLD 1-4 severity grade}
 #'   }
 #'
 #' @details
+#' Prevalent (history) COPD is identified by the union of:
+#' ICD-10/ICD-9 codes before baseline, self-reported COPD/emphysema/chronic
+#' bronchitis, spirometry obstruction at baseline (FEV1/FVC < 0.7), and
+#' optionally UK Biobank algorithmically-defined COPD (Field 42016).
+#'
+#' Incident (prospective) COPD is identified by:
+#' ICD-10/ICD-9 codes after baseline, death registry codes, and optionally
+#' algorithm-defined dates after baseline. Spirometry cannot define incident
+#' cases as it is measured only at baseline.
+#'
 #' Workflow:
 #' \enumerate{
 #'   \item Extract prevalent COPD from ICD/SR (before baseline) via

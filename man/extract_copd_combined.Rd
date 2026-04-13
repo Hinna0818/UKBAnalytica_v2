@@ -26,11 +26,13 @@ extract_copd_combined(
 predefined definitions. Must contain a \code{"COPD"} entry.}
 
 \item{prevalent_sources}{Character vector of sources for prevalent case
-identification. Default: \code{c("ICD10", "ICD9", "Self-report")}.}
+identification. Default: \code{c("ICD10", "ICD9", "Self-report")}.
+Add \code{"Algorithm"} to include UK Biobank algorithmically-defined outcomes.}
 
 \item{outcome_sources}{Character vector of sources for incident outcome
 ascertainment. Default: \code{c("ICD10", "ICD9", "Death")}.
-Self-report is excluded because follow-up dates are imprecise.}
+Self-report is excluded because follow-up dates are imprecise.
+Add \code{"Algorithm"} to include UK Biobank algorithmically-defined outcomes.}
 
 \item{censor_date}{Administrative censoring date. Default: \code{as.Date("2023-10-31")}.}
 
@@ -45,7 +47,7 @@ Default: \code{"p20154_i0"}. Set \code{NULL} to skip FEV1\% filter.}
 
 \item{ratio_threshold}{FEV1/FVC ratio threshold. Default: \code{0.7}.}
 
-\item{fev1_pred_threshold}{FEV1 predicted \\% threshold. Default: \code{80}.
+\item{fev1_pred_threshold}{FEV1 predicted percent threshold. Default: \code{80}.
 Set \code{NULL} for any airflow obstruction (GOLD 1+).}
 
 \item{include_severity}{Logical. Include GOLD severity grade column. Default: \code{FALSE}.}
@@ -65,31 +67,27 @@ NA for prevalent cases (not at risk).}
 \item{outcome_surv_time}{Numeric/NA — follow-up time in years.
 NA for prevalent cases.}
 \item{fev1_fvc_ratio}{FEV1/FVC ratio (numeric)}
-\item{fev1_predicted_pct}{FEV1 predicted \\% (numeric)}
+\item{fev1_predicted_pct}{FEV1 predicted percent (numeric)}
 \item{COPD_gold_grade}{(Optional) GOLD 1-4 severity grade}
 }
 }
 \description{
-One-step COPD extraction combining ICD codes, self-report, and spirometry,
-with full prevalent/incident classification for survival analysis.
-
-\strong{Prevalent (history) COPD} is identified by the union of:
-\itemize{
-\item ICD-10/ICD-9 codes dated before baseline
-\item Self-reported COPD/emphysema/chronic bronchitis
-\item Spirometry obstruction at baseline (FEV1/FVC < 0.7)
-}
-
-\strong{Incident (prospective) COPD} is identified by:
-\itemize{
-\item ICD-10/ICD-9 codes dated after baseline
-\item Death registry codes
-\item (Spirometry cannot define incident cases — measured only at baseline)
-}
-
+One-step COPD extraction combining ICD codes, self-report, spirometry, and
+optionally UK Biobank algorithmically-defined outcomes, with full
+prevalent/incident classification for survival analysis.
 Output format aligns with \code{\link{build_survival_dataset}}.
 }
 \details{
+Prevalent (history) COPD is identified by the union of:
+ICD-10/ICD-9 codes before baseline, self-reported COPD/emphysema/chronic
+bronchitis, spirometry obstruction at baseline (FEV1/FVC < 0.7), and
+optionally UK Biobank algorithmically-defined COPD (Field 42016).
+
+Incident (prospective) COPD is identified by:
+ICD-10/ICD-9 codes after baseline, death registry codes, and optionally
+algorithm-defined dates after baseline. Spirometry cannot define incident
+cases as it is measured only at baseline.
+
 Workflow:
 \enumerate{
 \item Extract prevalent COPD from ICD/SR (before baseline) via

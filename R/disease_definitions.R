@@ -2,12 +2,17 @@
 #'
 #' @description
 #' Helper function to create a standardized disease definition object
-#' containing ICD-10/ICD-9 patterns and self-report codes.
+#' containing ICD-10/ICD-9 patterns, self-report codes, and optionally
+#' a UK Biobank algorithmically-defined outcome date field.
 #'
 #' @param name Full disease name (e.g., "Aortic Aneurysm").
 #' @param icd10_pattern Regular expression pattern for ICD-10 codes (optional).
 #' @param icd9_pattern Regular expression pattern for ICD-9 codes (optional).
 #' @param sr_codes Integer vector of UKB self-report illness codes (optional).
+#' @param algo_date_field Integer. UKB field ID for the algorithmically-defined
+#'   outcome date (Category 42). For example, 42016 for COPD, 42014 for Asthma.
+#'   The corresponding data column is expected as \code{p{field}_i0}.
+#'   Records with date \code{1900-01-01} are treated as unknown and excluded.
 #'
 #' @return A list containing the disease definition parameters.
 #'
@@ -18,18 +23,28 @@
 #'   icd10_pattern = "^I71",
 #'   icd9_pattern = "^441"
 #' )
+#'
+#' copd_def <- create_disease_definition(
+#'   name = "COPD",
+#'   icd10_pattern = "^(J40|J41|J42|J43|J44)",
+#'   icd9_pattern = "^(491|492|4932|496)",
+#'   sr_codes = c(1112, 1113, 1472),
+#'   algo_date_field = 42016
+#' )
 #' }
 #'
 #' @export
 create_disease_definition <- function(name,
                                        icd10_pattern = NULL,
                                        icd9_pattern = NULL,
-                                       sr_codes = NULL) {
+                                       sr_codes = NULL,
+                                       algo_date_field = NULL) {
   list(
     name = name,
     icd10_pattern = icd10_pattern,
     icd9_pattern = icd9_pattern,
-    sr_codes = sr_codes
+    sr_codes = sr_codes,
+    algo_date_field = algo_date_field
   )
 }
 
@@ -149,13 +164,15 @@ get_predefined_diseases <- function() {
       name = "Asthma",
       icd10_pattern = "^(J45|J46)",
       icd9_pattern = "^493",
-      sr_codes = c(1111)
+      sr_codes = c(1111),
+      algo_date_field = 42014
     ),
     COPD = create_disease_definition(
       name = "Chronic Obstructive Pulmonary Disease",
       icd10_pattern = "^(J40|J41|J42|J43|J44)",
       icd9_pattern = "^(491|492|4932|496)",
-      sr_codes = c(1112, 1113, 1472)
+      sr_codes = c(1112, 1113, 1472),
+      algo_date_field = 42016
     ),
 
     # Renal and metabolic
