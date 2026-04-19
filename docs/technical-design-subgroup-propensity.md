@@ -939,7 +939,9 @@ library(UKBAnalytica)
 surv_data <- build_survival_dataset(
   ukb_data, 
   diseases, 
-  primary_disease = "CVD"
+  primary_disease = "CVD",
+  show_flow = TRUE,
+  dt_threads = 8
 )
 
 # =============================================================================

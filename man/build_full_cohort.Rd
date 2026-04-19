@@ -12,7 +12,8 @@ build_full_cohort(
   censor_date = as.Date("2023-10-31"),
   baseline_col = "p53_i0",
   primary_disease = NULL,
-  exclude_prevalent = TRUE
+  exclude_prevalent = TRUE,
+  dt_threads = NULL
 )
 }
 \arguments{
@@ -40,6 +41,10 @@ status (must be in \code{disease_definitions}). If NULL, the first disease
 in the list is used.}
 
 \item{exclude_prevalent}{Logical; if TRUE, excludes prevalent cases from output.}
+
+\item{dt_threads}{Optional integer. If provided, temporarily sets
+\code{data.table} thread count via \code{data.table::setDTthreads()} for this
+function call, and restores the previous thread setting on exit.}
 }
 \value{
 A data.table with complete cohort survival data.

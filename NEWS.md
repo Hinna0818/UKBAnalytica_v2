@@ -1,5 +1,32 @@
 # UKBAnalytica News
 
+## UKBAnalytica 0.6.2 (2026-04-18)
+
+### Survival workflow and participant flow reporting
+- Enhanced `build_survival_dataset()` with `show_flow` to print step-by-step participant attrition in terminal for wide output.
+- Added flow summary fields for each step (`n_before`, `n_after`, `excluded`, retention rates from previous/raw cohort).
+- Attached the underlying flow table to returned wide-format result via `attr(result, "participant_flow")`.
+- Added optional `dt_threads` in `build_survival_dataset()` to let users temporarily configure `data.table` thread count for large runs.
+
+### Robust date parsing and stability improvements
+- Added internal `.safe_as_date()` utility (`R/date_utils.R`) to parse mixed date formats safely and convert malformed values to `NA` with warnings instead of stopping execution.
+- Replaced direct `as.Date()` calls in key pipelines with `.safe_as_date()` (ICD, death, baseline, incident-time utilities, and case extraction paths).
+- Fixed self-report date conversion in `parse_self_reported_illnesses()` to handle malformed year values (`Inf`, `-Inf`, `NaN`, non-numeric strings) without `charToDate` crashes.
+
+### Algorithm source compatibility
+- Updated algorithm field lookup to support both `p{field}_i0` and `p{field}` naming conventions for date/source fields.
+- Improved diagnostic messages when algorithm columns are unavailable.
+- Updated disease definition documentation for algorithm field naming compatibility.
+
+### Diabetes diagnosis method refinement
+- Refined diabetes phenotyping workflow for prospective analyses by clarifying multi-source case ascertainment logic (ICD-10, ICD-9, and self-report) under unified earliest-date rules.
+- Improved practical support for diabetes endpoint setup across predefined disease definitions (`Diabetes`, `T1DM`, `T2DM`) in cohort construction workflows.
+
+### Machine learning
+- Added new exported helper `ukb_ml_split_data()` for train/internal-validation splitting.
+- Supports optional stratified sampling by a categorical variable and reproducible splitting with `seed`.
+- Added manual page `man/ukb_ml_split_data.Rd` and NAMESPACE export.
+
 ## UKBAnalytica 0.6.1 (2026-04-07)
 add sensitivity analysis module and refine the docs.
 - add `select_incident_by_years()` utility to split incident cases within or after a year cutoff from enrollment.

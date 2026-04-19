@@ -17,3 +17,9 @@
 ^data-raw$
 ^\.github$
 ^_site$
+^dist$
+^dist/
+^git-filter-repo$
+^data/outcome_test\.rda$
+^out_test$
+^out_test/

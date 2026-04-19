@@ -2,18 +2,18 @@
 
 <!-- badges: start -->
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![GitHub stars](https://img.shields.io/github/stars/Hinna0818/UKBAnalytica?style=flat)](https://github.com/Hinna0818/UKBAnalytica/stargazers)
-[![GitHub last commit](https://img.shields.io/github/last-commit/Hinna0818/UKBAnalytica)](https://github.com/Hinna0818/UKBAnalytica/commits/main)
-[![Visits](https://hits.sh/github.com/Hinna0818/UKBAnalytica.svg)](https://hits.sh/github.com/Hinna0818/UKBAnalytica/)
+[![GitHub stars](https://img.shields.io/github/stars/Hinna0818/UKBAnalytica_v2?style=flat)](https://github.com/Hinna0818/UKBAnalytica_v2/stargazers)
+[![GitHub last commit](https://img.shields.io/github/last-commit/Hinna0818/UKBAnalytica_v2)](https://github.com/Hinna0818/UKBAnalytica_v2/commits/main)
+[![Visits](https://hits.sh/github.com/Hinna0818/UKBAnalytica_v2.svg)](https://hits.sh/github.com/Hinna0818/UKBAnalytica_v2/)
 <!-- badges: end -->
 
 <img src="man/figures/logo.png" align="right" height="139" alt="UKBAnalytica logo" />
 
 **UKBAnalytica** is a high-performance R package for processing UK Biobank 
 Research Analysis Platform (RAP) data exports. It focuses on standardized
-phenotyping, survival-ready datasets, calable preprocessing, and downstream analysis.
+phenotyping, survival-ready datasets, scalable preprocessing, and downstream analysis.
 
-**For details, please visit**: [Full documentation for UKBAnalytica](https://hinna0818.github.io/UKBAnalytica/)
+**For details, please visit**: [Full documentation for UKBAnalytica](https://hinna0818.github.io/UKBAnalytica_v2/)
 
 ![](docs/image.png)
 
@@ -23,18 +23,18 @@ You can install the development version of `UKBAnalytica` from GitHub with:
 
 ```r
 # install.packages("devtools")
-devtools::install_github("Hinna0818/UKBAnalytica")
+devtools::install_github("Hinna0818/UKBAnalytica_v2")
 ```
 
 Sometimes due to the network problem, it is not easy to use `devtools` to install, so you can install in this way:
 ```{r}
 # install.packages("pak")
-pak::pkg_install("Hinna0818/UKBAnalytica")
+pak::pkg_install("Hinna0818/UKBAnalytica_v2")
 ```
 
 Or just clone this repo and intall it locally:
 ```{bash}
-git clone https://github.com/Hinna0818/UKBAnalytica.git
+git clone https://github.com/Hinna0818/UKBAnalytica_v2.git
 cd UKBAnalytica
 R CMD INSTALL .
 ```
@@ -56,7 +56,9 @@ analysis_dt <- build_survival_dataset(
   disease_definitions = diseases,
   prevalent_sources = c("ICD10", "ICD9", "Self-report", "Death"),
   outcome_sources = c("ICD10", "ICD9", "Death"),
-  primary_disease = "AA"
+  primary_disease = "AA",
+  show_flow = TRUE,
+  dt_threads = 8
 )
 
 head(analysis_dt[, .(
@@ -67,7 +69,18 @@ head(analysis_dt[, .(
   outcome_status,
   outcome_surv_time
 )])
+
+# Optional: retrieve participant flow table printed by show_flow
+flow_dt <- attr(analysis_dt, "participant_flow")
+if (!is.null(flow_dt)) print(flow_dt)
 ```
+
+## Recent survival updates (v0.6.2)
+
+- Added optional `show_flow` in `build_survival_dataset()` to print participant attrition in terminal and attach a reusable flow table via `attr(result, "participant_flow")`.
+- Added optional `dt_threads` in `build_survival_dataset()` to temporarily control `data.table` threads for large runs, with automatic restoration on exit.
+- Added algorithm-source column compatibility for both `p{field}_i0` and `p{field}` naming styles.
+- Improved date robustness in ICD/self-report/death parsing to prevent malformed date values from interrupting full-pipeline execution.
 
 ## What this package covers
 

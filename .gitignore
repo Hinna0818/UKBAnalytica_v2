@@ -36,3 +36,11 @@ prompt.md
 # prompt
 prompt.md
 UKBAnalytica.Rcheck/
+
+# local cleanup/tool artifacts
+dist/
+git-filter-repo
+
+out_test/data/outcome_test.rda
+out_test/
+data/outcome_test.rda

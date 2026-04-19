@@ -111,6 +111,129 @@ if (length(predictors) == 1 && predictors == ".") {
   list(train_idx = train_idx, test_idx = test_idx)
 }
 
+#' Split Data into Training and Internal Validation Sets
+#'
+#' @description
+#' Creates a train/internal-validation split for prospective ML analyses.
+#' Supports optional stratified sampling by a categorical variable (e.g.,
+#' disease status) to preserve class proportions.
+#'
+#' @param df A data.frame or data.table to split.
+#' @param split_ratio Proportion assigned to training set. Must be in (0, 1).
+#'   Default is 0.8.
+#' @param stratify_by Optional character scalar. Column name used for
+#'   stratified sampling. If NULL, performs simple random split.
+#' @param seed Optional random seed for reproducibility.
+#' @param verbose Logical; print split summary messages. Default TRUE.
+#'
+#' @return A named list with two elements:
+#' \describe{
+#'   \item{train}{Training subset of \code{df}.}
+#'   \item{internal_validation}{Internal validation subset of \code{df}.}
+#' }
+#'
+#' @details
+#' For stratified splitting, missing values in \code{stratify_by} are treated
+#' as an additional stratum to avoid dropping observations.
+#'
+#' @examples
+#' \dontrun{
+#' split_obj <- ukb_ml_split_data(
+#'   df = ukb_data,
+#'   split_ratio = 0.8,
+#'   stratify_by = "COPD_history",
+#'   seed = 2026
+#' )
+#'
+#' train_df <- split_obj$train
+#' valid_df <- split_obj$internal_validation
+#' }
+#'
+#' @export
+ukb_ml_split_data <- function(df,
+                              split_ratio = 0.8,
+                              stratify_by = NULL,
+                              seed = NULL,
+                              verbose = TRUE) {
+
+  if (!is.data.frame(df)) {
+    stop("`df` must be a data.frame or data.table", call. = FALSE)
+  }
+
+  n <- nrow(df)
+  if (is.null(n) || n < 2) {
+    stop("`df` must contain at least 2 rows", call. = FALSE)
+  }
+
+  if (!is.numeric(split_ratio) || length(split_ratio) != 1 ||
+      is.na(split_ratio) || split_ratio <= 0 || split_ratio >= 1) {
+    stop("`split_ratio` must be a single numeric value strictly between 0 and 1", call. = FALSE)
+  }
+
+  if (!is.null(seed)) {
+    set.seed(seed)
+  }
+
+  if (!is.null(stratify_by)) {
+    if (!is.character(stratify_by) || length(stratify_by) != 1) {
+      stop("`stratify_by` must be NULL or a single column name", call. = FALSE)
+    }
+    if (!stratify_by %in% names(df)) {
+      stop(sprintf("Column not found in `df`: %s", stratify_by), call. = FALSE)
+    }
+
+    strat_vec <- as.character(df[[stratify_by]])
+    strat_vec[is.na(strat_vec)] <- "<NA>"
+
+    strata <- split(seq_len(n), strat_vec)
+    train_idx <- integer(0)
+
+    for (group_idx in strata) {
+      n_group <- length(group_idx)
+
+      n_group_train <- as.integer(round(n_group * split_ratio))
+      if (n_group > 1) {
+        n_group_train <- max(1L, min(n_group - 1L, n_group_train))
+      } else {
+        n_group_train <- if (split_ratio >= 0.5) 1L else 0L
+      }
+
+      if (n_group_train > 0L) {
+        train_idx <- c(train_idx, sample(group_idx, n_group_train))
+      }
+    }
+  } else {
+    n_train <- as.integer(round(n * split_ratio))
+    n_train <- max(1L, min(n - 1L, n_train))
+    train_idx <- sample(seq_len(n), n_train)
+  }
+
+  train_idx <- sort(unique(train_idx))
+  internal_validation_idx <- setdiff(seq_len(n), train_idx)
+
+  train_df <- df[train_idx, , drop = FALSE]
+  internal_validation_df <- df[internal_validation_idx, , drop = FALSE]
+
+  if (isTRUE(verbose)) {
+    if (is.null(stratify_by)) {
+      message(sprintf(
+        "Split complete: train=%d, internal_validation=%d (random)",
+        nrow(train_df), nrow(internal_validation_df)
+      ))
+    } else {
+      message(sprintf(
+        "Split complete: train=%d, internal_validation=%d (stratified by '%s')",
+        nrow(train_df), nrow(internal_validation_df), stratify_by
+      ))
+    }
+  }
+
+  list(
+    train = train_df,
+    internal_validation = internal_validation_df
+  )
+}
+
 # Main Model Training Function
 
 #' Train a Machine Learning Model
@@ -734,7 +857,6 @@ ukb_ml_cv <- function(formula,
       train_idx <- unlist(fold_idx[-fold])
       
       train_data <- prep$data[train_idx, ]
-      test_data <- prep$data[test_idx, ]
       
       X_train <- prep$X[train_idx, , drop = FALSE]
       y_train <- prep$y[train_idx]

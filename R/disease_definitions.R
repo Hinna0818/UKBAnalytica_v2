@@ -11,7 +11,7 @@
 #' @param sr_codes Integer vector of UKB self-report illness codes (optional).
 #' @param algo_date_field Integer. UKB field ID for the algorithmically-defined
 #'   outcome date (Category 42). For example, 42016 for COPD, 42014 for Asthma.
-#'   The corresponding data column is expected as \code{p{field}_i0}.
+#'   The corresponding data column can be \code{p{field}_i0} or \code{p{field}}.
 #'   Records with date \code{1900-01-01} are treated as unknown and excluded.
 #' @param algo_source_field Integer. UKB field ID for the algorithmically-defined
 #'   outcome source (Category 42). For example, 42017 for COPD source and

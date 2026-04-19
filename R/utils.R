@@ -100,8 +100,8 @@ select_incident_by_years <- function(df,
       ))
     }
 
-    baseline_date <- as.Date(dt[[baseline_col]])
-    event_date <- as.Date(dt[[event_date_col]])
+    baseline_date <- .safe_as_date(dt[[baseline_col]], col_name = baseline_col)
+    event_date <- .safe_as_date(dt[[event_date_col]], col_name = event_date_col)
     incident_time <- as.numeric(event_date - baseline_date) / 365.25
     dt[[time_col]] <- incident_time
   }

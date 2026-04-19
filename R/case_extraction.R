@@ -76,7 +76,7 @@ extract_cases_by_source <- function(dt,
   death_long <- if ("Death" %in% sources) parse_death_records(dt) else data.table::data.table()
 
   death_dates <- get_death_dates(dt)
-  baseline_dt <- dt[, .(eid, baseline_date = as.Date(get(baseline_col)))]
+  baseline_dt <- dt[, .(eid, baseline_date = .safe_as_date(get(baseline_col), col_name = baseline_col))]
 
   # Process each disease
   results_list <- lapply(names(disease_definitions), function(disease_key) {
@@ -105,26 +105,34 @@ extract_cases_by_source <- function(dt,
 
     # Algorithm source: UK Biobank algorithmically-defined outcomes (Category 42)
     if ("Algorithm" %in% sources && !is.null(def$algo_date_field)) {
-      algo_col <- paste0("p", def$algo_date_field, "_i0")
-      if (algo_col %in% names(dt)) {
-        algo_source_col <- if (!is.null(def$algo_source_field)) {
-          paste0("p", def$algo_source_field, "_i0")
-        } else {
-          NULL
+      algo_col_candidates <- c(
+        paste0("p", def$algo_date_field, "_i0"),
+        paste0("p", def$algo_date_field)
+      )
+      algo_col <- algo_col_candidates[algo_col_candidates %in% names(dt)][1]
+
+      if (!is.na(algo_col)) {
+        algo_source_col <- NULL
+        if (!is.null(def$algo_source_field)) {
+          algo_source_candidates <- c(
+            paste0("p", def$algo_source_field, "_i0"),
+            paste0("p", def$algo_source_field)
+          )
+          algo_source_col <- algo_source_candidates[algo_source_candidates %in% names(dt)][1]
         }
 
-        has_algo_source <- !is.null(algo_source_col) && algo_source_col %in% names(dt)
+        has_algo_source <- !is.null(algo_source_col) && !is.na(algo_source_col)
 
         if (has_algo_source) {
           algo_dt <- dt[, .(
             eid,
-            algo_date = as.Date(get(algo_col)),
+            algo_date = .safe_as_date(get(algo_col), col_name = algo_col),
             algo_source = as.character(get(algo_source_col))
           )]
         } else {
           algo_dt <- dt[, .(
             eid,
-            algo_date = as.Date(get(algo_col)),
+            algo_date = .safe_as_date(get(algo_col), col_name = algo_col),
             algo_source = NA_character_
           )]
         }
@@ -142,7 +150,11 @@ extract_cases_by_source <- function(dt,
           diagnosis_sources$algo <- algo_dt
         }
       } else {
-        message(sprintf("  [Algorithm] Column '%s' not found for %s, skipping", algo_col, disease_key))
+        message(sprintf(
+          "  [Algorithm] No date column found for %s, tried: %s, skipping",
+          disease_key,
+          paste(algo_col_candidates, collapse = ", ")
+        ))
       }
     }
 
@@ -220,21 +232,33 @@ generate_wide_format_dual_source <- function(dt,
                                               prevalent_sources,
                                               outcome_sources,
                                               censor_date,
-                                              baseline_col) {
+                                              baseline_col,
+                                              prevalent_long = NULL,
+                                              outcome_long = NULL) {
 
   if (!data.table::is.data.table(dt)) {
     dt <- data.table::as.data.table(dt)
   }
 
-  # Extract prevalent cases (includes self-report)
-  prevalent_long <- extract_cases_by_source(
-    dt, disease_definitions, prevalent_sources, censor_date, baseline_col
-  )
+  # Extract cases only if precomputed inputs are not provided.
+  # This avoids duplicate expensive parsing in high-volume pipelines.
+  if (is.null(prevalent_long)) {
+    prevalent_long <- extract_cases_by_source(
+      dt, disease_definitions, prevalent_sources, censor_date, baseline_col
+    )
+  }
+  if (!data.table::is.data.table(prevalent_long)) {
+    prevalent_long <- data.table::as.data.table(prevalent_long)
+  }
 
-  # Extract outcome cases (excludes self-report)
-  outcome_long <- extract_cases_by_source(
-    dt, disease_definitions, outcome_sources, censor_date, baseline_col
-  )
+  if (is.null(outcome_long)) {
+    outcome_long <- extract_cases_by_source(
+      dt, disease_definitions, outcome_sources, censor_date, baseline_col
+    )
+  }
+  if (!data.table::is.data.table(outcome_long)) {
+    outcome_long <- data.table::as.data.table(outcome_long)
+  }
 
   all_eids <- dt[, .(eid)]
   wide_dt <- data.table::copy(all_eids)
@@ -503,7 +527,7 @@ prepare_analysis_dataset <- function(dt,
 
   # Get default survival time for non-cases
   death_dates <- get_death_dates(dt)
-  baseline_dt <- dt[, .(eid, baseline_date = as.Date(get(baseline_col)))]
+  baseline_dt <- dt[, .(eid, baseline_date = .safe_as_date(get(baseline_col), col_name = baseline_col))]
   control_info <- data.table::merge.data.table(baseline_dt, death_dates, by = "eid", all.x = TRUE)
   control_info[, end_date := pmin(death_date, censor_date, na.rm = TRUE)]
   control_info[is.na(end_date), end_date := censor_date]
@@ -1289,7 +1313,7 @@ extract_copd_combined <- function(dt,
   # 5. Survival time for non-prevalent
   # ──────────────────────────────────────
   death_dates <- get_death_dates(dt)
-  baseline_dt <- dt[, .(eid, baseline_date = as.Date(get(baseline_col)))]
+  baseline_dt <- dt[, .(eid, baseline_date = .safe_as_date(get(baseline_col), col_name = baseline_col))]
   surv_info <- data.table::merge.data.table(baseline_dt, death_dates, by = "eid", all.x = TRUE)
   surv_info[, default_end := pmin(death_date, censor_date, na.rm = TRUE)]
   surv_info[is.na(default_end), default_end := censor_date]

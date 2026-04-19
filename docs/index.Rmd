@@ -14,7 +14,7 @@ description: |
   Research Analysis Platform (RAP) data, including data download, preprocessing,
   disease phenotyping, survival analysis, and multiple imputation.
 link-citations: yes
-github-repo: Hinna0818/UKBAnalytica
+github-repo: Hinna0818/UKBAnalytica_v2
 ---
 
 # Introduction {#intro}
@@ -28,12 +28,21 @@ survival datasets.
 
 - Built on `data.table` for efficient processing of large-scale biobank data.
 - Supports ICD-10, ICD-9, self-reported illness, and death registry data.
+- Supports optional UKB algorithm-defined outcomes (Category 42).
 - Flexible dual-source case definitions for main and sensitivity analyses.
 - Generates survival datasets with proper prevalent/incident case handling.
+- Supports participant-flow reporting and optional thread tuning in survival dataset construction.
 - Includes predefined definitions for common cardiovascular and metabolic diseases.
 - Provides standardized preprocessing for common UKB baseline variables.
 - **Advanced analysis modules**: subgroup analysis, propensity score methods, mediation analysis, and multiple imputation pooling.
 - Includes sensitivity preprocessing helpers for restricted-dataset regression analyses.
+
+## Recent survival updates (v0.6.2)
+
+- `build_survival_dataset()` supports `show_flow` to print participant attrition and attach `attr(result, "participant_flow")`.
+- `build_survival_dataset()` supports optional `dt_threads` for temporary `data.table` thread control in large datasets.
+- Algorithm fields now support both `p{field}_i0` and `p{field}` naming styles for Category 42 data.
+- Date parsing is more robust to malformed values in ICD, self-report, and death records.
 
 ## Installation
 
@@ -41,7 +50,7 @@ Install the development version from GitHub:
 
 ```r
 # install.packages("devtools")
-devtools::install_github("Hinna0818/UKBAnalytica")
+devtools::install_github("Hinna0818/UKBAnalytica_v2")
 ```
 
 ## Package overview

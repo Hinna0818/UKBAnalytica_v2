@@ -1,6 +1,6 @@
 Package: UKBAnalytica
 Title: UK Biobank Data Processing and Survival Analysis Toolkit
-Version: 0.6.1
+Version: 0.6.2
 Authors@R: 
     person("Nan", "He", email = "nanh302311@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0009-0008-6932-3867"))
@@ -10,9 +10,9 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
-URL: https://github.com/Hinna0818/UKBAnalytica,
-    https://hinna0818.github.io/UKBAnalytica/
-BugReports: https://github.com/Hinna0818/UKBAnalytica/issues
+URL: https://github.com/Hinna0818/UKBAnalytica_v2,
+    https://hinna0818.github.io/UKBAnalytica_v2/
+BugReports: https://github.com/Hinna0818/UKBAnalytica_v2/issues
 Imports: 
     data.table,
     stringi,
@@ -44,5 +44,3 @@ Config/testthat/edition: 3
 Config/Needs/bioc: FALSE
 Depends: 
     R (>= 3.5)
-LazyData: true
-LazyDataCompression: xz

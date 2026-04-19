@@ -52,7 +52,7 @@ parse_death_records <- function(dt) {
     death_dates, id.vars = "eid", measure.vars = death_date_cols,
     variable.name = "col", value.name = "death_date", na.rm = TRUE
   )
-  death_dates_long[, death_date := as.Date(death_date)]
+  death_dates_long[, death_date := .safe_as_date(death_date, col_name = "death_date")]
   death_dates_long[, col := NULL]
 
   # Aggregate to earliest death date per participant
@@ -207,7 +207,7 @@ get_death_dates <- function(dt) {
     id.vars = "eid", measure.vars = death_date_cols,
     variable.name = "col", value.name = "death_date", na.rm = TRUE
   )
-  death_dates[, death_date := as.Date(death_date)]
+  death_dates[, death_date := .safe_as_date(death_date, col_name = "death_date")]
   death_dates[, col := NULL]
 
   result <- death_dates[

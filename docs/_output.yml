@@ -5,7 +5,7 @@ bookdown::gitbook:
       before: |
         <li><a href="./">UKBAnalytica</a></li>
       after: |
-        <li><a href="https://github.com/Hinna0818/UKBAnalytica" target="_blank">GitHub</a></li>
+        <li><a href="https://github.com/Hinna0818/UKBAnalytica_v2" target="_blank">GitHub</a></li>
     download: ["pdf", "epub"]
     sharing:
       github: yes

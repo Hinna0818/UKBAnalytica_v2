@@ -13,7 +13,9 @@ build_survival_dataset(
   baseline_col = "p53_i0",
   primary_disease = NULL,
   output = c("wide", "long"),
-  include_all = TRUE
+  include_all = TRUE,
+  show_flow = TRUE,
+  dt_threads = NULL
 )
 }
 \arguments{
@@ -45,6 +47,14 @@ with disease indicator columns; \code{"long"} returns case-level records.}
 
 \item{include_all}{Logical; when \code{output = "long"}, if TRUE includes the full
 cohort with non-cases coded as status = 0.}
+
+\item{show_flow}{Logical; if \code{TRUE} and \code{output = "wide"}, prints
+a step-by-step participant attrition table in the terminal, including
+counts before/after each filter and retention rates.}
+
+\item{dt_threads}{Optional integer. If provided, temporarily sets
+\code{data.table} thread count via \code{data.table::setDTthreads()} for this
+function call, and restores the previous thread setting on exit.}
 }
 \value{
 A data.table with columns:
@@ -99,7 +109,9 @@ surv_data <- build_survival_dataset(
   diseases,
   prevalent_sources = c("ICD10", "ICD9", "Self-report", "Death"),
   outcome_sources = c("ICD10", "Death"),
-  primary_disease = "AA"
+  primary_disease = "AA",
+  show_flow = TRUE,
+  dt_threads = 8
 )
 }
 

@@ -268,7 +268,7 @@ All three regression functions share the same parameter structure:
 
 ```{r unified-interface, eval=FALSE}
 # General syntax
-results <- runmulti_*(
+results <- runmulti_model(
   data = your_data,              # data.frame or data.table
   main_var = c("var1", "var2"),  # Variables to test (one at a time)
   covariates = c("age", "sex"),  # Adjustment variables (NULL = univariate)

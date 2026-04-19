@@ -26,6 +26,12 @@
 #'   with disease indicator columns; \code{"long"} returns case-level records.
 #' @param include_all Logical; when \code{output = "long"}, if TRUE includes the full
 #'   cohort with non-cases coded as status = 0.
+#' @param show_flow Logical; if \code{TRUE} and \code{output = "wide"}, prints
+#'   a step-by-step participant attrition table in the terminal, including
+#'   counts before/after each filter and retention rates.
+#' @param dt_threads Optional integer. If provided, temporarily sets
+#'   \code{data.table} thread count via \code{data.table::setDTthreads()} for this
+#'   function call, and restores the previous thread setting on exit.
 #'
 #' @return A data.table with columns:
 #'   \describe{
@@ -73,7 +79,8 @@
 #'   diseases,
 #'   prevalent_sources = c("ICD10", "ICD9", "Self-report", "Death"),
 #'   outcome_sources = c("ICD10", "Death"),
-#'   primary_disease = "AA"
+#'   primary_disease = "AA",
+#'   dt_threads = 8
 #' )
 #' }
 #'
@@ -87,12 +94,28 @@ build_survival_dataset <- function(dt,
                                     baseline_col = "p53_i0",
                                     primary_disease = NULL,
                                     output = c("wide", "long"),
-                                    include_all = TRUE) {
+                                    include_all = TRUE,
+                                    show_flow = TRUE,
+                                    dt_threads = NULL) {
 
   output <- match.arg(output)
 
   if (!data.table::is.data.table(dt)) {
     dt <- data.table::as.data.table(dt)
+  }
+
+  if (!is.null(dt_threads)) {
+    if (!is.numeric(dt_threads) || length(dt_threads) != 1 || is.na(dt_threads) || dt_threads < 1) {
+      stop("`dt_threads` must be NULL or a single positive integer", call. = FALSE)
+    }
+    dt_threads <- as.integer(dt_threads)
+    old_threads <- data.table::getDTthreads()
+    data.table::setDTthreads(threads = dt_threads)
+    on.exit(data.table::setDTthreads(threads = old_threads), add = TRUE)
+    message(sprintf(
+      "[build_survival_dataset] data.table threads: %d (will restore to %d on exit)",
+      dt_threads, old_threads
+    ))
   }
 
   if (!baseline_col %in% names(dt)) {
@@ -128,7 +151,7 @@ build_survival_dataset <- function(dt,
 
   message("[build_survival_dataset] Calculating survival times...")
 
-  baseline_dt <- dt[, .(eid, baseline_date = as.Date(get(baseline_col)))]
+  baseline_dt <- dt[, .(eid, baseline_date = .safe_as_date(get(baseline_col), col_name = baseline_col))]
   death_dates <- get_death_dates(dt)
   all_eids <- data.table::merge.data.table(baseline_dt, death_dates, by = "eid", all.x = TRUE)
 
@@ -149,6 +172,10 @@ build_survival_dataset <- function(dt,
   }
 
   if (output == "long") {
+    if (isTRUE(show_flow)) {
+      message("[build_survival_dataset] `show_flow` is currently available for output='wide'; skipping flow print for long output.")
+    }
+
     full_list <- lapply(diseases, function(d) {
       # Use prevalent_sources for history, outcome_sources for incident
       d_prevalent <- prevalent_cases_dt[disease == d]
@@ -203,7 +230,9 @@ build_survival_dataset <- function(dt,
     prevalent_sources = prevalent_sources,
     outcome_sources = outcome_sources,
     censor_date = censor_date,
-    baseline_col = baseline_col
+    baseline_col = baseline_col,
+    prevalent_long = prevalent_cases_dt,
+    outcome_long = outcome_cases_dt
   )
 
   primary_outcome_cases <- outcome_cases_dt[disease == primary_disease]
@@ -259,6 +288,91 @@ build_survival_dataset <- function(dt,
   result_dt <- data.table::merge.data.table(result_dt, outcome_dt, by = "eid", all.x = TRUE)
   data.table::setorder(result_dt, eid)
 
+  if (isTRUE(show_flow)) {
+    history_col <- paste0(primary_disease, "_history")
+    idx_non_missing_status <- !is.na(result_dt$outcome_status)
+
+    history_rule <- sprintf("Keep %s == 0", history_col)
+    idx_non_prevalent <- idx_non_missing_status
+    if (history_col %in% names(result_dt)) {
+      history_vec <- result_dt[[history_col]]
+      idx_non_prevalent <- idx_non_missing_status & !is.na(history_vec) & history_vec == 0L
+    } else {
+      history_rule <- sprintf("Column %s not found; skip this filter", history_col)
+    }
+
+    idx_valid_time <- idx_non_prevalent & !is.na(result_dt$outcome_surv_time) & result_dt$outcome_surv_time >= 0
+
+    n_raw <- nrow(dt)
+    n_result <- nrow(result_dt)
+    n_non_missing_status <- sum(idx_non_missing_status)
+    n_non_prevalent <- sum(idx_non_prevalent)
+    n_valid_time <- sum(idx_valid_time)
+
+    flow_dt <- data.table::data.table(
+      step = c(
+        "Raw cohort",
+        "After build_survival_dataset",
+        "Keep non-missing outcome_status",
+        sprintf("Exclude baseline prevalent %s", primary_disease),
+        "Keep valid outcome_surv_time"
+      ),
+      n_before = as.integer(c(
+        n_raw,
+        n_raw,
+        n_result,
+        n_non_missing_status,
+        n_non_prevalent
+      )),
+      n_after = as.integer(c(
+        n_raw,
+        n_result,
+        n_non_missing_status,
+        n_non_prevalent,
+        n_valid_time
+      )),
+      exclusion_rule = c(
+        "None",
+        "Function output row count check",
+        "Exclude outcome_status is NA",
+        history_rule,
+        "Keep !is.na(outcome_surv_time) & outcome_surv_time >= 0"
+      )
+    )
+
+    flow_dt$excluded <- flow_dt$n_before - flow_dt$n_after
+    flow_dt$retained_from_prev <- ifelse(
+      flow_dt$n_before > 0,
+      flow_dt$n_after / flow_dt$n_before,
+      NA_real_
+    )
+    flow_dt$retained_from_raw <- ifelse(
+      n_raw > 0,
+      flow_dt$n_after / n_raw,
+      NA_real_
+    )
+
+    flow_print <- data.table::copy(flow_dt)
+    flow_print$retained_from_prev <- ifelse(
+      is.na(flow_print$retained_from_prev),
+      NA_character_,
+      sprintf("%.2f%%", flow_print$retained_from_prev * 100)
+    )
+    flow_print$retained_from_raw <- ifelse(
+      is.na(flow_print$retained_from_raw),
+      NA_character_,
+      sprintf("%.2f%%", flow_print$retained_from_raw * 100)
+    )
+
+    attr(result_dt, "participant_flow") <- flow_dt
+
+    message(sprintf(
+      "[build_survival_dataset] Participant flow (primary disease: %s)",
+      primary_disease
+    ))
+    print(flow_print)
+  }
+
   message("[build_survival_dataset] Complete")
 
   return(result_dt)
@@ -284,7 +398,8 @@ build_full_cohort <- function(dt,
                                censor_date = as.Date("2023-10-31"),
                                baseline_col = "p53_i0",
                                primary_disease = NULL,
-                               exclude_prevalent = TRUE) {
+                               exclude_prevalent = TRUE,
+                               dt_threads = NULL) {
 
   if (!data.table::is.data.table(dt)) {
     dt <- data.table::as.data.table(dt)
@@ -299,7 +414,8 @@ build_full_cohort <- function(dt,
     baseline_col = baseline_col,
     primary_disease = primary_disease,
     output = "long",
-    include_all = TRUE
+    include_all = TRUE,
+    dt_threads = dt_threads
   )
 
   if (exclude_prevalent) {

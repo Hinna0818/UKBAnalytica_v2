@@ -90,11 +90,11 @@ parse_icd9_diagnoses <- function(dt) {
 
   dates_long <- data.table::melt(
     dt_sub, id.vars = "eid", measure.vars = date_cols,
-    variable.name = "date_col", value.name = "diag_date", na.rm = FALSE
+    variable.name = "date_col", value.name = "diag_date", na.rm = TRUE
   )
   dates_long[, idx := as.integer(sub("^p41281_a", "", date_col))]
   dates_long[, date_col := NULL]
-  dates_long[, diag_date := as.Date(diag_date)]
+  dates_long[, diag_date := .safe_as_date(diag_date, col_name = "ICD9_diag_date")]
 
   # Step 3: Join by eid and index
   result <- data.table::merge.data.table(
@@ -234,11 +234,11 @@ parse_icd10_diagnoses <- function(dt) {
 
   dates_long <- data.table::melt(
     dt_sub, id.vars = "eid", measure.vars = date_cols,
-    variable.name = "date_col", value.name = "diag_date", na.rm = FALSE
+    variable.name = "date_col", value.name = "diag_date", na.rm = TRUE
   )
   dates_long[, idx := as.integer(sub("^p41280_a", "", date_col))]
   dates_long[, date_col := NULL]
-  dates_long[, diag_date := as.Date(diag_date)]
+  dates_long[, diag_date := .safe_as_date(diag_date, col_name = "ICD10_diag_date")]
 
   # Step 3: Join by eid and index
   result <- data.table::merge.data.table(

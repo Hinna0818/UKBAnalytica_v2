@@ -95,7 +95,7 @@ parse_self_reported_illnesses <- function(dt, baseline_col = "p53_i0") {
 
   years_long <- data.table::melt(
     dt_sub, id.vars = "eid", measure.vars = year_cols,
-    variable.name = "col_name", value.name = "diag_year", na.rm = FALSE
+    variable.name = "col_name", value.name = "diag_year", na.rm = TRUE
   )
 
   years_long[, c("instance", "array_idx") := {
@@ -113,14 +113,25 @@ parse_self_reported_illnesses <- function(dt, baseline_col = "p53_i0") {
     by = c("eid", "instance", "array_idx"), all.x = TRUE
   )
 
-  # Step 4: Convert fractional year to date
-  result[diag_year < 0, diag_year := NA_real_]
+  # Step 4: Convert fractional year to date (robust to malformed values)
+  result[, diag_year := suppressWarnings(as.numeric(diag_year))]
+  result[!is.finite(diag_year) | diag_year < 0, diag_year := NA_real_]
   result[, diag_date := {
     year_int <- floor(diag_year)
     month_frac <- diag_year - year_int
     month_int <- pmax(1L, pmin(12L, as.integer(round(month_frac * 12)) + 1L))
-    date_str <- sprintf("%04d-%02d-01", year_int, month_int)
-    as.Date(date_str)
+
+    valid_idx <- !is.na(year_int) & is.finite(year_int) & year_int >= 1
+    date_str <- rep(NA_character_, .N)
+    if (any(valid_idx)) {
+      date_str[valid_idx] <- sprintf(
+        "%04d-%02d-01",
+        as.integer(year_int[valid_idx]),
+        month_int[valid_idx]
+      )
+    }
+
+    .safe_as_date(date_str, col_name = "Self_report_diag_date")
   }]
 
   result[, diag_year := NULL]
