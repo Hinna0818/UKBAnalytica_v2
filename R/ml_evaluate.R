@@ -120,8 +120,10 @@ ukb_ml_metrics <- function(object,
         auc = as.numeric(pROC::auc(pROC::roc(y_true, prob, quiet = TRUE))),
         accuracy = (tp + tn) / (tp + tn + fp + fn),
         sensitivity = if (tp + fn > 0) tp / (tp + fn) else NA,
+        recall      = if (tp + fn > 0) tp / (tp + fn) else NA,
         specificity = if (tn + fp > 0) tn / (tn + fp) else NA,
-        ppv = if (tp + fp > 0) tp / (tp + fp) else NA,
+        ppv       = if (tp + fp > 0) tp / (tp + fp) else NA,
+        precision = if (tp + fp > 0) tp / (tp + fp) else NA,
         npv = if (tn + fn > 0) tn / (tn + fn) else NA,
         f1 = if (2 * tp + fp + fn > 0) 2 * tp / (2 * tp + fp + fn) else NA,
         brier = mean((prob - as.numeric(y_true == levels(y_true)[2]))^2),
@@ -172,6 +174,49 @@ ukb_ml_metrics <- function(object,
   }
   
   ci_list
+}
+
+#' @keywords internal
+.get_binary_truth_prob <- function(object, newdata = NULL, caller = "Evaluation") {
+  if (object$task != "classification") {
+    stop(sprintf("%s is only for classification models", caller))
+  }
+
+  if (is.null(newdata)) {
+    y_true <- object$y_test
+    pred <- ukb_ml_predict(object, type = "prob")
+  } else {
+    y_true <- newdata[[object$outcome]]
+    pred <- ukb_ml_predict(object, newdata = newdata, type = "prob")
+  }
+
+  y_true <- droplevels(as.factor(y_true))
+  prob <- if (is.matrix(pred)) pred[, 2] else pred
+
+  keep <- !is.na(prob) & !is.na(y_true)
+  if (!all(keep)) {
+    y_true <- droplevels(y_true[keep])
+    prob <- prob[keep]
+  }
+
+  if (length(prob) == 0) {
+    stop(sprintf("%s: no valid observations after removing missing values", caller))
+  }
+
+  if (nlevels(y_true) != 2) {
+    stop(sprintf("%s requires a binary outcome with exactly 2 classes", caller))
+  }
+
+  if (any(!is.finite(prob))) {
+    stop(sprintf("%s: predicted probabilities contain non-finite values", caller))
+  }
+
+  if (any(prob < 0 | prob > 1)) {
+    stop(sprintf("%s: predicted probabilities must be within [0, 1]", caller))
+  }
+
+  y_binary <- as.integer(y_true == levels(y_true)[2])
+  list(y_true = y_true, prob = prob, y_binary = y_binary)
 }
 
 # ROC Curve
@@ -490,5 +535,329 @@ print.ukb_ml_confusion <- function(x, ...) {
   for (m in names(x$metrics)) {
     cat(sprintf("  %s: %.4f\n", m, x$metrics[m]))
   }
+  invisible(x)
+}
+
+# KS Curve
+
+#' KS Curve Analysis
+#'
+#' @description
+#' Compute Kolmogorov-Smirnov curve (TPR - FPR vs threshold) for a
+#' binary classification model.
+#'
+#' @param object A ukb_ml object
+#' @param newdata Optional new data for evaluation
+#' @param plot Whether to create the KS plot (default TRUE)
+#' @param n_thresholds Number of threshold points (default 200)
+#' @param ... Additional arguments
+#'
+#' @return A ukb_ml_ks object with fields: data (threshold/tpr/fpr/ks),
+#'   ks_stat (max KS), ks_threshold (threshold at max KS)
+#'
+#' @export
+ukb_ml_ks <- function(object,
+                      newdata = NULL,
+                      plot = TRUE,
+                      n_thresholds = 200,
+                      ...) {
+
+  n_thresholds <- as.integer(n_thresholds)
+  if (length(n_thresholds) != 1 || is.na(n_thresholds) || n_thresholds < 2) {
+    stop("n_thresholds must be a single integer >= 2")
+  }
+
+  eval_data <- .get_binary_truth_prob(object, newdata, caller = "ukb_ml_ks")
+  prob <- eval_data$prob
+  y_binary <- eval_data$y_binary
+  n_pos <- sum(y_binary == 1L)
+  n_neg <- sum(y_binary == 0L)
+
+  thresholds <- seq(0, 1, length.out = n_thresholds)
+
+  tpr_vec <- vapply(thresholds, function(t) {
+    if (n_pos == 0) return(0)
+    sum(prob >= t & y_binary == 1L) / n_pos
+  }, numeric(1))
+
+  fpr_vec <- vapply(thresholds, function(t) {
+    if (n_neg == 0) return(0)
+    sum(prob >= t & y_binary == 0L) / n_neg
+  }, numeric(1))
+
+  ks_vec  <- tpr_vec - fpr_vec
+  max_idx <- which.max(ks_vec)
+
+  result <- list(
+    data          = data.frame(threshold = thresholds, tpr = tpr_vec,
+                               fpr = fpr_vec, ks = ks_vec),
+    ks_stat       = ks_vec[max_idx],
+    ks_threshold  = thresholds[max_idx]
+  )
+  class(result) <- "ukb_ml_ks"
+
+  if (plot) result$plot <- plot_ml_ks(result)
+  result
+}
+
+#' @export
+print.ukb_ml_ks <- function(x, ...) {
+  cat("\nKS Curve Analysis\n")
+  cat(sprintf("  KS Statistic : %.4f\n", x$ks_stat))
+  cat(sprintf("  At Threshold : %.4f\n", x$ks_threshold))
+  invisible(x)
+}
+
+# PR Curve
+
+#' Precision-Recall Curve Analysis
+#'
+#' @description
+#' Compute Precision-Recall curve and area under PR curve (AUPRC)
+#' for a binary classification model.
+#'
+#' @param object A ukb_ml object
+#' @param newdata Optional new data
+#' @param plot Whether to create the PR plot (default TRUE)
+#' @param n_thresholds Number of threshold points (default 200)
+#' @param ... Additional arguments
+#'
+#' @return A ukb_ml_pr object with fields: data (threshold/precision/recall),
+#'   auprc, prevalence
+#'
+#' @export
+ukb_ml_pr <- function(object,
+                      newdata = NULL,
+                      plot = TRUE,
+                      n_thresholds = 200,
+                      ...) {
+
+  n_thresholds <- as.integer(n_thresholds)
+  if (length(n_thresholds) != 1 || is.na(n_thresholds) || n_thresholds < 2) {
+    stop("n_thresholds must be a single integer >= 2")
+  }
+
+  eval_data <- .get_binary_truth_prob(object, newdata, caller = "ukb_ml_pr")
+  prob <- eval_data$prob
+  y_binary <- eval_data$y_binary
+  prevalence <- mean(y_binary)
+
+  thresholds <- seq(0, 1, length.out = n_thresholds)
+
+  precision_vec <- vapply(thresholds, function(t) {
+    tp <- sum(prob >= t & y_binary == 1L)
+    fp <- sum(prob >= t & y_binary == 0L)
+    if (tp + fp == 0) return(NA_real_)
+    tp / (tp + fp)
+  }, numeric(1))
+
+  recall_vec <- vapply(thresholds, function(t) {
+    tp <- sum(prob >= t & y_binary == 1L)
+    fn <- sum(prob < t  & y_binary == 1L)
+    if (tp + fn == 0) return(0)
+    tp / (tp + fn)
+  }, numeric(1))
+
+  pr_data <- data.frame(threshold = thresholds,
+                        precision = precision_vec,
+                        recall    = recall_vec)
+
+  # AUPRC via trapezoidal integration on valid rows, sorted by recall
+  valid     <- !is.na(pr_data$precision)
+  pr_sorted <- pr_data[valid, ][order(pr_data$recall[valid]), ]
+  auprc <- if (nrow(pr_sorted) >= 2) {
+    sum(diff(pr_sorted$recall) *
+          (head(pr_sorted$precision, -1) + utils::tail(pr_sorted$precision, -1)) / 2)
+  } else {
+    NA_real_
+  }
+
+  result <- list(
+    data       = pr_data,
+    auprc      = auprc,
+    prevalence = prevalence
+  )
+  class(result) <- "ukb_ml_pr"
+
+  if (plot) result$plot <- plot_ml_pr(result)
+  result
+}
+
+#' @export
+print.ukb_ml_pr <- function(x, ...) {
+  cat("\nPR Curve Analysis\n")
+  cat(sprintf("  AUPRC      : %.4f\n", x$auprc))
+  cat(sprintf("  Prevalence : %.4f\n", x$prevalence))
+  invisible(x)
+}
+
+# Gain / Lift Curves
+
+#' Gain and Lift Curve Analysis
+#'
+#' @description
+#' Compute Gain and Lift curves for a binary classification model by
+#' ranking predictions into decile bins.
+#'
+#' @param object A ukb_ml object
+#' @param newdata Optional new data
+#' @param plot Whether to create gain and lift plots (default TRUE)
+#' @param n_bins Number of bins / deciles (default 10)
+#' @param ... Additional arguments
+#'
+#' @return A ukb_ml_gain_lift object with field data containing:
+#'   decile, population_pct, positive_capture_pct, gain, lift
+#'
+#' @export
+ukb_ml_gain_lift <- function(object,
+                             newdata = NULL,
+                             plot = TRUE,
+                             n_bins = 10,
+                             ...) {
+
+  n_bins <- as.integer(n_bins)
+  if (length(n_bins) != 1 || is.na(n_bins) || n_bins < 1) {
+    stop("n_bins must be a single integer >= 1")
+  }
+
+  eval_data <- .get_binary_truth_prob(object, newdata, caller = "ukb_ml_gain_lift")
+  prob <- eval_data$prob
+  y_binary <- eval_data$y_binary
+  n <- length(y_binary)
+  total_pos <- sum(y_binary)
+
+  if (n_bins > n) {
+    warning(sprintf("n_bins (%d) is larger than sample size (%d); using n_bins = %d", n_bins, n, n),
+      call. = FALSE
+    )
+    n_bins <- n
+  }
+
+  # Sort descending by predicted probability
+  ord      <- order(prob, decreasing = TRUE)
+  y_sorted <- y_binary[ord]
+
+  # Assign to bins (ceiling guarantees each observation falls in [1, n_bins])
+  bins <- pmin(ceiling(seq_along(y_sorted) * n_bins / n), n_bins)
+
+  gl_data <- data.frame(
+    decile               = seq_len(n_bins),
+    population_pct       = numeric(n_bins),
+    positive_capture_pct = numeric(n_bins),
+    gain                 = numeric(n_bins),
+    lift                 = numeric(n_bins)
+  )
+
+  for (k in seq_len(n_bins)) {
+    in_top_k               <- bins <= k
+    pop_pct                <- sum(in_top_k) / n
+    pos_pct                <- if (total_pos > 0) sum(y_sorted[in_top_k]) / total_pos else 0
+    gl_data$population_pct[k]       <- pop_pct
+    gl_data$positive_capture_pct[k] <- pos_pct
+    gl_data$gain[k]                  <- pos_pct
+    gl_data$lift[k]                  <- if (pop_pct > 0) pos_pct / pop_pct else 0
+  }
+
+  result <- list(data = gl_data, n_bins = n_bins)
+  class(result) <- "ukb_ml_gain_lift"
+
+  if (plot) {
+    result$gain_plot <- plot_ml_gain(result)
+    result$lift_plot <- plot_ml_lift(result)
+    result$plot      <- result$gain_plot
+  }
+  result
+}
+
+#' @export
+print.ukb_ml_gain_lift <- function(x, ...) {
+  cat("\nGain / Lift Table\n")
+  print(x$data, row.names = FALSE)
+  invisible(x)
+}
+
+# DCA
+
+#' Decision Curve Analysis
+#'
+#' @description
+#' Compute Decision Curve Analysis (DCA) net benefit across a range of
+#' threshold probabilities for a binary classification model.
+#'
+#' @param object A ukb_ml object
+#' @param newdata Optional new data
+#' @param plot Whether to create the DCA plot (default TRUE)
+#' @param thresholds Numeric vector of threshold probabilities
+#'   (default seq(0.01, 0.99, by = 0.01))
+#' @param harm Additional harm parameter subtracted from net benefit (default 0)
+#' @param ... Additional arguments
+#'
+#' @return A ukb_ml_dca object with field data containing:
+#'   threshold, net_benefit_model, net_benefit_all, net_benefit_none
+#'
+#' @export
+ukb_ml_dca <- function(object,
+                       newdata    = NULL,
+                       plot       = TRUE,
+                       thresholds = seq(0.01, 0.99, by = 0.01),
+                       harm       = 0,
+                       ...) {
+
+  if (!is.numeric(thresholds) || length(thresholds) == 0) {
+    stop("thresholds must be a non-empty numeric vector")
+  }
+
+  thresholds <- sort(unique(as.numeric(thresholds)))
+  if (any(!is.finite(thresholds))) {
+    stop("thresholds must contain only finite numeric values")
+  }
+
+  if (any(thresholds <= 0 | thresholds >= 1)) {
+    stop("thresholds must be strictly between 0 and 1")
+  }
+
+  if (!is.numeric(harm) || length(harm) != 1 || is.na(harm) || !is.finite(harm)) {
+    stop("harm must be a single finite numeric value")
+  }
+
+  eval_data <- .get_binary_truth_prob(object, newdata, caller = "ukb_ml_dca")
+  prob <- eval_data$prob
+  y_binary <- eval_data$y_binary
+  n <- length(y_binary)
+  prevalence <- mean(y_binary)
+
+  nb_model <- vapply(thresholds, function(t) {
+    tp <- sum(prob >= t & y_binary == 1L)
+    fp <- sum(prob >= t & y_binary == 0L)
+    tp / n - fp / n * (t / (1 - t)) - harm
+  }, numeric(1))
+
+  nb_all <- vapply(thresholds, function(t) {
+    prevalence - (1 - prevalence) * (t / (1 - t))
+  }, numeric(1))
+
+  result <- list(
+    data = data.frame(
+      threshold          = thresholds,
+      net_benefit_model  = nb_model,
+      net_benefit_all    = nb_all,
+      net_benefit_none   = 0
+    ),
+    prevalence = prevalence,
+    harm       = harm
+  )
+  class(result) <- "ukb_ml_dca"
+
+  if (plot) result$plot <- plot_ml_dca(result)
+  result
+}
+
+#' @export
+print.ukb_ml_dca <- function(x, ...) {
+  cat("\nDecision Curve Analysis\n")
+  cat(sprintf("  Prevalence : %.4f\n", x$prevalence))
+  cat(sprintf("  Harm       : %.4f\n", x$harm))
+  cat("\nNet Benefit (first 5 thresholds):\n")
+  print(head(x$data, 5), row.names = FALSE)
   invisible(x)
 }

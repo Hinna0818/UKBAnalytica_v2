@@ -36,6 +36,8 @@ prompt.md
 # prompt
 prompt.md
 UKBAnalytica.Rcheck/
+..Rcheck/
+.Rcheck/
 
 # local cleanup/tool artifacts
 dist/

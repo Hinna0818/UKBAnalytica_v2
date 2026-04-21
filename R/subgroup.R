@@ -152,6 +152,28 @@ run_subgroup_analysis <- function(data,
       n_event <- sum(subset_data[[outcome]] == 1, na.rm = TRUE)
     }
 
+    # Exposure must vary within subgroup; otherwise effect is not estimable.
+    exposure_values <- subset_data[[exposure]]
+    n_unique_exposure <- length(unique(exposure_values[!is.na(exposure_values)]))
+    if (n_unique_exposure < 2) {
+      warning(sprintf(
+        "Exposure '%s' has no variation in subgroup '%s'; returning NA for effect estimate.",
+        exposure, level
+      ))
+      return(data.frame(
+        subgroup_var = subgroup_var,
+        subgroup = level,
+        n = n,
+        n_event = n_event,
+        estimate = NA,
+        lower95 = NA,
+        upper95 = NA,
+        pvalue = NA,
+        p_interaction = p_interaction,
+        stringsAsFactors = FALSE
+      ))
+    }
+
     # Build formula
     if (model_type == "cox") {
       rhs <- exposure
@@ -176,8 +198,8 @@ run_subgroup_analysis <- function(data,
         coefs <- sum_model$coefficients
         conf <- sum_model$conf.int
 
-        # Find the row for exposure
-        exp_row <- grep(paste0("^", exposure), rownames(coefs))[1]
+        # Find the row for exposure using model-term mapping to avoid prefix mis-match.
+        exp_row <- .find_exposure_row(model, coefs, exposure)
         if (is.na(exp_row)) {
           return(data.frame(
             subgroup_var = subgroup_var,
@@ -204,7 +226,7 @@ run_subgroup_analysis <- function(data,
         coefs <- sum_model$coefficients
         ci <- suppressWarnings(stats::confint(model))
 
-        exp_row <- grep(paste0("^", exposure), rownames(coefs))[1]
+        exp_row <- .find_exposure_row(model, coefs, exposure)
         if (is.na(exp_row)) {
           return(data.frame(
             subgroup_var = subgroup_var,
@@ -232,7 +254,7 @@ run_subgroup_analysis <- function(data,
         coefs <- sum_model$coefficients
         ci <- stats::confint(model)
 
-        exp_row <- grep(paste0("^", exposure), rownames(coefs))[1]
+        exp_row <- .find_exposure_row(model, coefs, exposure)
         if (is.na(exp_row)) {
           return(data.frame(
             subgroup_var = subgroup_var,
@@ -287,6 +309,43 @@ run_subgroup_analysis <- function(data,
   result_df <- do.call(rbind, results_list)
   rownames(result_df) <- NULL
   return(result_df)
+}
+
+#' @keywords internal
+#' @noRd
+.find_exposure_row <- function(model, coefs, exposure) {
+  coef_names <- rownames(coefs)
+  if (is.null(coef_names) || length(coef_names) == 0) {
+    return(NA_integer_)
+  }
+
+  # 1) Prefer exact coefficient name match (continuous/numeric exposure)
+  exact <- which(coef_names == exposure)
+  if (length(exact) > 0) {
+    return(exact[1])
+  }
+
+  # 2) Use model-matrix assign mapping (safe for factor exposure)
+  mm <- tryCatch(stats::model.matrix(model), error = function(e) NULL)
+  if (!is.null(mm)) {
+    assign <- attr(mm, "assign")
+    term_labels <- attr(stats::terms(model), "term.labels")
+    exposure_terms <- c(exposure, paste0("`", exposure, "`"))
+    exp_term_idx <- which(term_labels %in% exposure_terms)
+
+    if (length(exp_term_idx) >= 1) {
+      # If repeated terms appear, use the first exact term occurrence.
+      exp_cols <- colnames(mm)[assign == exp_term_idx[1]]
+      exp_rows <- match(exp_cols, coef_names)
+      exp_rows <- exp_rows[!is.na(exp_rows)]
+      if (length(exp_rows) > 0) {
+        return(exp_rows[1])
+      }
+    }
+  }
+
+  # Do not use prefix regex fallback here to avoid x -> x2 mis-match.
+  NA_integer_
 }
 
 

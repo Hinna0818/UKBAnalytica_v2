@@ -10,7 +10,9 @@ generate_wide_format_dual_source(
   prevalent_sources,
   outcome_sources,
   censor_date,
-  baseline_col
+  baseline_col,
+  prevalent_long = NULL,
+  outcome_long = NULL
 )
 }
 \arguments{

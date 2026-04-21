@@ -23,3 +23,6 @@
 ^data/outcome_test\.rda$
 ^out_test$
 ^out_test/
+^UKBAnalytica\.Rcheck$
+^\.\.Rcheck$
+^\.Rcheck$

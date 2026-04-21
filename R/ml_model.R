@@ -970,11 +970,13 @@ ukb_ml_cv <- function(formula,
       val <- switch(m,
         auc = as.numeric(pROC::auc(pROC::roc(y_true, prob, quiet = TRUE))),
         accuracy = (tp + tn) / (tp + tn + fp + fn),
-        sensitivity = tp / (tp + fn),
-        specificity = tn / (tn + fp),
-        ppv = tp / (tp + fp),
-        npv = tn / (tn + fn),
-        f1 = 2 * tp / (2 * tp + fp + fn),
+        sensitivity = if (tp + fn > 0) tp / (tp + fn) else NA,
+        recall = if (tp + fn > 0) tp / (tp + fn) else NA,
+        specificity = if (tn + fp > 0) tn / (tn + fp) else NA,
+        ppv = if (tp + fp > 0) tp / (tp + fp) else NA,
+        precision = if (tp + fp > 0) tp / (tp + fp) else NA,
+        npv = if (tn + fn > 0) tn / (tn + fn) else NA,
+        f1 = if (2 * tp + fp + fn > 0) 2 * tp / (2 * tp + fp + fn) else NA,
         NA
       )
       result[m] <- val

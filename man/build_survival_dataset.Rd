@@ -110,7 +110,6 @@ surv_data <- build_survival_dataset(
   prevalent_sources = c("ICD10", "ICD9", "Self-report", "Death"),
   outcome_sources = c("ICD10", "Death"),
   primary_disease = "AA",
-  show_flow = TRUE,
   dt_threads = 8
 )
 }

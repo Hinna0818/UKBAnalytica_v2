@@ -1907,6 +1907,285 @@ plot_shap_dependence <- function(object,
   p
 }
 
+#' Plot KS Curve
+#'
+#' @description
+#' Create a KS (Kolmogorov-Smirnov) curve plot showing TPR, FPR, and
+#' their difference (KS statistic) across thresholds.
+#'
+#' @param object A ukb_ml_ks object from ukb_ml_ks()
+#' @param title Plot title
+#' @param ... Additional arguments
+#'
+#' @return A ggplot2 object
+#'
+#' @import ggplot2
+#' @export
+plot_ml_ks <- function(object, title = "KS Curve", ...) {
+
+  if (!inherits(object, "ukb_ml_ks")) {
+    stop("object must be a ukb_ml_ks object")
+  }
+
+  ks_data <- object$data
+
+  plot_data <- data.frame(
+    threshold = rep(ks_data$threshold, 3),
+    value     = c(ks_data$tpr, ks_data$fpr, ks_data$ks),
+    curve     = rep(c("TPR (Sensitivity)", "FPR (1-Specificity)", "KS"),
+                    each = nrow(ks_data))
+  )
+
+  y_lower <- min(plot_data$value, na.rm = TRUE)
+  y_upper <- max(plot_data$value, na.rm = TRUE)
+
+  ggplot(plot_data, aes(
+    x = .data$threshold,
+    y = .data$value,
+    color = .data$curve,
+    linetype = .data$curve
+  )) +
+    geom_line(linewidth = 1) +
+    geom_vline(xintercept = object$ks_threshold,
+               linetype = "dotted", color = "gray40") +
+    annotate("text",
+             x     = pmin(object$ks_threshold + 0.03, 0.95),
+             y     = object$ks_stat / 2,
+             label = sprintf("KS = %.3f\n@ t = %.3f",
+                             object$ks_stat, object$ks_threshold),
+             hjust = 0, size = 3.5) +
+    scale_color_manual(values = c(
+      "TPR (Sensitivity)"   = "#2166AC",
+      "FPR (1-Specificity)" = "#D73027",
+      "KS"                  = "#1A9641"
+    )) +
+    scale_linetype_manual(values = c(
+      "TPR (Sensitivity)"   = "solid",
+      "FPR (1-Specificity)" = "solid",
+      "KS"                  = "dashed"
+    )) +
+    scale_x_continuous(limits = c(0, 1)) +
+    scale_y_continuous(limits = c(min(-0.05, y_lower), max(1, y_upper))) +
+    labs(title = title, x = "Threshold", y = "Rate",
+         color = NULL, linetype = NULL) +
+    theme_minimal(base_size = 12) +
+    theme(
+      plot.title      = element_text(hjust = 0.5, face = "bold"),
+      legend.position = "bottom"
+    )
+}
+
+#' Plot PR Curve
+#'
+#' @description
+#' Create a Precision-Recall curve plot with AUPRC annotation.
+#'
+#' @param object A ukb_ml_pr object from ukb_ml_pr()
+#' @param title Plot title
+#' @param ... Additional arguments
+#'
+#' @return A ggplot2 object
+#'
+#' @import ggplot2
+#' @export
+plot_ml_pr <- function(object, title = "PR Curve", ...) {
+
+  if (!inherits(object, "ukb_ml_pr")) {
+    stop("object must be a ukb_ml_pr object")
+  }
+
+  pr_data <- object$data[!is.na(object$data$precision), ]
+
+  if (nrow(pr_data) == 0) {
+    stop("No valid precision values available for PR plotting")
+  }
+
+  ggplot(pr_data, aes(x = .data$recall, y = .data$precision)) +
+    geom_line(linewidth = 1, color = "#E34A33") +
+    geom_hline(yintercept = object$prevalence,
+               linetype = "dashed", color = "gray50") +
+    annotate("text",
+             x     = 0.5,
+             y     = pmin(object$prevalence + 0.04, 1),
+             label = sprintf("Prevalence = %.3f", object$prevalence),
+             size = 3.5, color = "gray50") +
+    scale_x_continuous(limits = c(0, 1)) +
+    scale_y_continuous(limits = c(0, 1)) +
+    labs(
+      title    = title,
+      subtitle = sprintf("AUPRC = %.3f", object$auprc),
+      x        = "Recall (Sensitivity)",
+      y        = "Precision (PPV)"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+      plot.title    = element_text(hjust = 0.5, face = "bold"),
+      plot.subtitle = element_text(hjust = 0.5)
+    )
+}
+
+#' Plot Gain Curve
+#'
+#' @description
+#' Create a Gain curve plot comparing model targeting against random selection.
+#'
+#' @param object A ukb_ml_gain_lift object from ukb_ml_gain_lift()
+#' @param title Plot title
+#' @param ... Additional arguments
+#'
+#' @return A ggplot2 object
+#'
+#' @import ggplot2
+#' @export
+plot_ml_gain <- function(object, title = "Gain Curve", ...) {
+
+  if (!inherits(object, "ukb_ml_gain_lift")) {
+    stop("object must be a ukb_ml_gain_lift object")
+  }
+
+  gl_data <- object$data
+
+  model_pts <- data.frame(
+    population_pct = c(0, gl_data$population_pct),
+    gain           = c(0, gl_data$gain),
+    model          = "Model"
+  )
+  baseline_pts <- data.frame(
+    population_pct = c(0, 1),
+    gain           = c(0, 1),
+    model          = "Random"
+  )
+  plot_data <- rbind(model_pts, baseline_pts)
+
+  ggplot(plot_data, aes(
+    x = .data$population_pct,
+    y = .data$gain,
+    color = .data$model,
+    linetype = .data$model
+  )) +
+    geom_line(linewidth = 1) +
+    geom_point(data = model_pts, size = 2) +
+    scale_color_manual(values = c("Model" = "#2166AC", "Random" = "gray50")) +
+    scale_linetype_manual(values = c("Model" = "solid", "Random" = "dashed")) +
+    scale_x_continuous(limits = c(0, 1), labels = scales::percent) +
+    scale_y_continuous(limits = c(0, 1), labels = scales::percent) +
+    labs(
+      title    = title,
+      x        = "Population (%)",
+      y        = "Positive Cases Captured (%)",
+      color    = NULL,
+      linetype = NULL
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+      plot.title      = element_text(hjust = 0.5, face = "bold"),
+      legend.position = "bottom"
+    )
+}
+
+#' Plot Lift Curve
+#'
+#' @description
+#' Create a Lift curve plot showing the ratio of model vs random targeting.
+#'
+#' @param object A ukb_ml_gain_lift object from ukb_ml_gain_lift()
+#' @param title Plot title
+#' @param ... Additional arguments
+#'
+#' @return A ggplot2 object
+#'
+#' @import ggplot2
+#' @export
+plot_ml_lift <- function(object, title = "Lift Curve", ...) {
+
+  if (!inherits(object, "ukb_ml_gain_lift")) {
+    stop("object must be a ukb_ml_gain_lift object")
+  }
+
+  gl_data <- object$data
+
+  ggplot(gl_data, aes(x = .data$decile, y = .data$lift)) +
+    geom_line(linewidth = 1, color = "#2166AC") +
+    geom_point(size = 3, color = "#2166AC") +
+    geom_hline(yintercept = 1, linetype = "dashed", color = "gray50") +
+    annotate("text",
+             x     = max(gl_data$decile) * 0.95,
+             y     = 1.05,
+             label = "Random",
+             hjust = 1, color = "gray50", size = 3.5) +
+    scale_x_continuous(breaks = gl_data$decile) +
+    labs(title = title, x = "Decile", y = "Lift") +
+    theme_minimal(base_size = 12) +
+    theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+}
+
+#' Plot Decision Curve Analysis
+#'
+#' @description
+#' Create a Decision Curve Analysis plot showing net benefit of the model
+#' compared to treat-all and treat-none strategies.
+#'
+#' @param object A ukb_ml_dca object from ukb_ml_dca()
+#' @param title Plot title
+#' @param ... Additional arguments
+#'
+#' @return A ggplot2 object
+#'
+#' @import ggplot2
+#' @export
+plot_ml_dca <- function(object, title = "Decision Curve Analysis", ...) {
+
+  if (!inherits(object, "ukb_ml_dca")) {
+    stop("object must be a ukb_ml_dca object")
+  }
+
+  dca_data <- object$data
+
+  plot_data <- data.frame(
+    threshold   = rep(dca_data$threshold, 3),
+    net_benefit = c(dca_data$net_benefit_model,
+                    dca_data$net_benefit_all,
+                    rep(0, nrow(dca_data))),
+    Strategy    = rep(c("Model", "Treat All", "Treat None"),
+                      each = nrow(dca_data))
+  )
+
+  y_vals <- c(dca_data$net_benefit_model, dca_data$net_benefit_all)
+  y_min  <- max(min(y_vals, na.rm = TRUE) - 0.05, -0.1)
+
+  ggplot(plot_data, aes(
+    x = .data$threshold,
+    y = .data$net_benefit,
+    color = .data$Strategy,
+    linetype = .data$Strategy
+  )) +
+    geom_line(linewidth = 1) +
+    scale_color_manual(values = c(
+      "Model"      = "#2166AC",
+      "Treat All"  = "#D73027",
+      "Treat None" = "gray50"
+    )) +
+    scale_linetype_manual(values = c(
+      "Model"      = "solid",
+      "Treat All"  = "dashed",
+      "Treat None" = "dotted"
+    )) +
+    scale_x_continuous(limits = c(0, 1)) +
+    coord_cartesian(ylim = c(y_min, NA)) +
+    labs(
+      title    = title,
+      x        = "Threshold Probability",
+      y        = "Net Benefit",
+      color    = NULL,
+      linetype = NULL
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+      plot.title      = element_text(hjust = 0.5, face = "bold"),
+      legend.position = "bottom"
+    )
+}
+
 #' Plot SHAP Force (Waterfall)
 #'
 #' @description
