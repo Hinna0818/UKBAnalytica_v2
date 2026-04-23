@@ -5,22 +5,30 @@
 \title{Create Disease Definition Object}
 \usage{
 create_disease_definition(
-  name,
+  name = NULL,
   icd10_pattern = NULL,
   icd9_pattern = NULL,
   sr_codes = NULL,
+  death_icd10 = NULL,
   algo_date_field = NULL,
-  algo_source_field = NULL
+  algo_source_field = NULL,
+  icd10 = NULL,
+  icd9 = NULL,
+  self_report = NULL
 )
 }
 \arguments{
-\item{name}{Full disease name (e.g., "Aortic Aneurysm").}
+\item{name}{Full disease name (e.g., "Aortic Aneurysm"). If NULL,
+defaults to "Custom disease".}
 
 \item{icd10_pattern}{Regular expression pattern for ICD-10 codes (optional).}
 
 \item{icd9_pattern}{Regular expression pattern for ICD-9 codes (optional).}
 
 \item{sr_codes}{Integer vector of UKB self-report illness codes (optional).}
+
+\item{death_icd10}{Optional regular expression pattern (or code vector) for
+death-cause ICD-10 matching. If NULL, defaults to \code{icd10_pattern}.}
 
 \item{algo_date_field}{Integer. UKB field ID for the algorithmically-defined
 outcome date (Category 42). For example, 42016 for COPD, 42014 for Asthma.
@@ -30,6 +38,12 @@ Records with date \code{1900-01-01} are treated as unknown and excluded.}
 \item{algo_source_field}{Integer. UKB field ID for the algorithmically-defined
 outcome source (Category 42). For example, 42017 for COPD source and
 42015 for Asthma source. Stored as metadata for source provenance.}
+
+\item{icd10}{Deprecated alias of \code{icd10_pattern}.}
+
+\item{icd9}{Deprecated alias of \code{icd9_pattern}.}
+
+\item{self_report}{Deprecated alias of \code{sr_codes}.}
 }
 \value{
 A list containing the disease definition parameters.

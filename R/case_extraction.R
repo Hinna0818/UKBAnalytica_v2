@@ -98,8 +98,9 @@ extract_cases_by_source <- function(dt,
       if (nrow(filtered) > 0) diagnosis_sources$sr <- aggregate_self_report_earliest(filtered)
     }
 
-    if ("Death" %in% sources && !is.null(def$icd10_pattern) && nrow(death_long) > 0) {
-      filtered <- filter_death_codes(death_long, def$icd10_pattern, disease_key)
+    death_pattern <- if (!is.null(def$death_icd10)) def$death_icd10 else def$icd10_pattern
+    if ("Death" %in% sources && !is.null(death_pattern) && nrow(death_long) > 0) {
+      filtered <- filter_death_codes(death_long, death_pattern, disease_key)
       if (nrow(filtered) > 0) diagnosis_sources$death <- aggregate_death_as_diagnosis(filtered)
     }
 

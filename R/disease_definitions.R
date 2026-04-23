@@ -5,10 +5,13 @@
 #' containing ICD-10/ICD-9 patterns, self-report codes, and optionally
 #' a UK Biobank algorithmically-defined outcome date field.
 #'
-#' @param name Full disease name (e.g., "Aortic Aneurysm").
+#' @param name Full disease name (e.g., "Aortic Aneurysm"). If NULL,
+#'   defaults to "Custom disease".
 #' @param icd10_pattern Regular expression pattern for ICD-10 codes (optional).
 #' @param icd9_pattern Regular expression pattern for ICD-9 codes (optional).
 #' @param sr_codes Integer vector of UKB self-report illness codes (optional).
+#' @param death_icd10 Optional regular expression pattern (or code vector) for
+#'   death-cause ICD-10 matching. If NULL, defaults to \code{icd10_pattern}.
 #' @param algo_date_field Integer. UKB field ID for the algorithmically-defined
 #'   outcome date (Category 42). For example, 42016 for COPD, 42014 for Asthma.
 #'   The corresponding data column can be \code{p{field}_i0} or \code{p{field}}.
@@ -16,6 +19,9 @@
 #' @param algo_source_field Integer. UKB field ID for the algorithmically-defined
 #'   outcome source (Category 42). For example, 42017 for COPD source and
 #'   42015 for Asthma source. Stored as metadata for source provenance.
+#' @param icd10 Deprecated alias of \code{icd10_pattern}.
+#' @param icd9 Deprecated alias of \code{icd9_pattern}.
+#' @param self_report Deprecated alias of \code{sr_codes}.
 #'
 #' @return A list containing the disease definition parameters.
 #'
@@ -37,17 +43,65 @@
 #' }
 #'
 #' @export
-create_disease_definition <- function(name,
-                                       icd10_pattern = NULL,
-                                       icd9_pattern = NULL,
-                                       sr_codes = NULL,
-                                       algo_date_field = NULL,
-                                       algo_source_field = NULL) {
+create_disease_definition <- function(name = NULL,
+                                      icd10_pattern = NULL,
+                                      icd9_pattern = NULL,
+                                      sr_codes = NULL,
+                                      death_icd10 = NULL,
+                                      algo_date_field = NULL,
+                                      algo_source_field = NULL,
+                                      icd10 = NULL,
+                                      icd9 = NULL,
+                                      self_report = NULL) {
+
+  .normalize_pattern <- function(x, field_name) {
+    if (is.null(x)) return(NULL)
+    if (!is.character(x)) {
+      stop(sprintf("'%s' must be character (regex or code vector)", field_name))
+    }
+    x <- x[!is.na(x) & nzchar(x)]
+    if (length(x) == 0) return(NULL)
+    if (length(x) == 1) return(x)
+
+    # Treat vector inputs as code prefixes unless already anchored.
+    x <- ifelse(grepl("^\\^", x), x, paste0("^", x))
+    paste0("(", paste(x, collapse = "|"), ")")
+  }
+
+  if (!is.null(icd10)) {
+    warning("'icd10' is deprecated; use 'icd10_pattern'", call. = FALSE)
+    if (is.null(icd10_pattern)) icd10_pattern <- icd10
+  }
+
+  if (!is.null(icd9)) {
+    warning("'icd9' is deprecated; use 'icd9_pattern'", call. = FALSE)
+    if (is.null(icd9_pattern)) icd9_pattern <- icd9
+  }
+
+  if (!is.null(self_report)) {
+    warning("'self_report' is deprecated; use 'sr_codes'", call. = FALSE)
+    if (is.null(sr_codes)) sr_codes <- self_report
+  }
+
+  if (is.null(name) || !is.character(name) || length(name) != 1 || !nzchar(name)) {
+    name <- "Custom disease"
+  }
+
+  icd10_pattern <- .normalize_pattern(icd10_pattern, "icd10_pattern")
+  icd9_pattern <- .normalize_pattern(icd9_pattern, "icd9_pattern")
+  death_icd10 <- .normalize_pattern(death_icd10, "death_icd10")
+
+  # Backward-compatible default: death matching follows ICD-10 pattern unless specified.
+  if (is.null(death_icd10)) {
+    death_icd10 <- icd10_pattern
+  }
+
   list(
     name = name,
     icd10_pattern = icd10_pattern,
     icd9_pattern = icd9_pattern,
     sr_codes = sr_codes,
+    death_icd10 = death_icd10,
     algo_date_field = algo_date_field,
     algo_source_field = algo_source_field
   )
@@ -383,6 +437,15 @@ combine_disease_definitions <- function(..., name = "Combined") {
     paste0("(", paste(icd9_patterns, collapse = "|"), ")")
   } else NULL
 
+  # Combine death ICD-10 patterns (fallback to general ICD-10 when absent)
+  death_patterns <- sapply(defs, function(x) {
+    if (!is.null(x$death_icd10)) x$death_icd10 else x$icd10_pattern
+  })
+  death_patterns <- death_patterns[!sapply(death_patterns, is.null)]
+  death_combined <- if (length(death_patterns) > 0) {
+    paste0("(", paste(death_patterns, collapse = "|"), ")")
+  } else NULL
+
   # Combine self-report codes
   sr_codes <- unlist(lapply(defs, function(x) x$sr_codes))
   sr_codes <- unique(sr_codes[!is.na(sr_codes)])
@@ -392,6 +455,7 @@ combine_disease_definitions <- function(..., name = "Combined") {
     name = name,
     icd10_pattern = icd10_combined,
     icd9_pattern = icd9_combined,
-    sr_codes = sr_codes
+    sr_codes = sr_codes,
+    death_icd10 = death_combined
   )
 }

@@ -383,10 +383,11 @@ str(diseases[["Hypertension"]])
 
 A definition typically contains:
 
-- `icd10` -- character vector of ICD-10 codes (prefix-matched).
-- `icd9` -- character vector of ICD-9 codes.
-- `self_report` -- integer vector of self-report coding IDs.
-- `death_icd10` -- character vector of death-cause ICD-10 codes.
+- `icd10_pattern` -- regular expression for ICD-10 codes.
+- `icd9_pattern` -- regular expression for ICD-9 codes.
+- `sr_codes` -- integer vector of self-report coding IDs.
+- `death_icd10` -- optional regular expression for death-cause ICD-10 codes
+  (if omitted, `icd10_pattern` is used).
 - `algo_date_field` -- integer UKB field ID for algorithm-defined diagnosis date (optional).
 - `algo_source_field` -- integer UKB field ID for algorithm-defined diagnosis source (optional).
 
@@ -396,10 +397,11 @@ Use `create_disease_definition()` to define a new disease:
 
 ```r
 my_disease <- create_disease_definition(
-  icd10       = c("K70", "K71", "K72", "K73", "K74"),
-  icd9        = c("571"),
-  self_report = c(1604),
-  death_icd10 = c("K70", "K74")
+  name = "Chronic Liver Disease",
+  icd10_pattern = "^(K70|K71|K72|K73|K74)",
+  icd9_pattern = "^571",
+  sr_codes = c(1604),
+  death_icd10 = "^(K70|K74)"
 )
 ```
 
@@ -408,14 +410,18 @@ add algorithm date/source fields:
 
 ```r
 copd_def <- create_disease_definition(
-  icd10 = c("J41", "J42", "J43", "J44"),
-  icd9 = c("490", "491", "492", "496"),
-  self_report = c(1112),
-  death_icd10 = c("J41", "J42", "J43", "J44"),
+  name = "COPD",
+  icd10_pattern = "^(J41|J42|J43|J44)",
+  icd9_pattern = "^(490|491|492|496)",
+  sr_codes = c(1112),
+  death_icd10 = "^(J41|J42|J43|J44)",
   algo_date_field = 42016,
   algo_source_field = 42017
 )
 ```
+
+Deprecated aliases `icd10`, `icd9`, and `self_report` are still accepted for
+backward compatibility.
 
 When parsing algorithm fields, both column naming styles are supported:
 `p{field}_i0` and `p{field}`.
