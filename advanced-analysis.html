@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Chapter 9 Advanced Analysis Modules | UKBAnalytica: A Guide to UK Biobank Data Analysis</title>
+  <meta name="description" content="<p>A comprehensive guide to the UKBAnalytica R package for processing UK Biobank
+Research Analysis Platform (RAP) data, including data download, preprocessing,
+disease phenotyping, survival analysis, and multiple imputation.</p>" />
+  <meta name="generator" content="bookdown 0.46 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Chapter 9 Advanced Analysis Modules | UKBAnalytica: A Guide to UK Biobank Data Analysis" />
+  <meta property="og:type" content="book" />
+  
+  <meta property="og:description" content="<p>A comprehensive guide to the UKBAnalytica R package for processing UK Biobank
+Research Analysis Platform (RAP) data, including data download, preprocessing,
+disease phenotyping, survival analysis, and multiple imputation.</p>" />
+  <meta name="github-repo" content="Hinna0818/UKBAnalytica_v2" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 9 Advanced Analysis Modules | UKBAnalytica: A Guide to UK Biobank Data Analysis" />
+  
+  <meta name="twitter:description" content="<p>A comprehensive guide to the UKBAnalytica R package for processing UK Biobank
+Research Analysis Platform (RAP) data, including data download, preprocessing,
+disease phenotyping, survival analysis, and multiple imputation.</p>" />
+  
+
+
+
+<meta name="date" content="2026-04-24" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="main-analysis.html"/>
+
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+
+
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<style type="text/css">
+  
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+</style>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">UKBAnalytica</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a>
+<ul>
+<li class="chapter" data-level="1.1" data-path="index.html"><a href="index.html#key-features"><i class="fa fa-check"></i><b>1.1</b> Key features</a></li>
+<li class="chapter" data-level="1.2" data-path="index.html"><a href="index.html#recent-survival-updates-v0.6.2"><i class="fa fa-check"></i><b>1.2</b> Recent survival updates (v0.6.2)</a></li>
+<li class="chapter" data-level="1.3" data-path="index.html"><a href="index.html#installation"><i class="fa fa-check"></i><b>1.3</b> Installation</a></li>
+<li class="chapter" data-level="1.4" data-path="index.html"><a href="index.html#package-overview"><i class="fa fa-check"></i><b>1.4</b> Package overview</a></li>
+<li class="chapter" data-level="1.5" data-path="index.html"><a href="index.html#core-functions"><i class="fa fa-check"></i><b>1.5</b> Core functions</a></li>
+<li class="chapter" data-level="1.6" data-path="index.html"><a href="index.html#advanced-analysis-functions"><i class="fa fa-check"></i><b>1.6</b> Advanced analysis functions</a></li>
+<li class="chapter" data-level="1.7" data-path="index.html"><a href="index.html#machine-learning-functions"><i class="fa fa-check"></i><b>1.7</b> Machine learning functions</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="rap-download.html"><a href="rap-download.html"><i class="fa fa-check"></i><b>2</b> Downloading Data from RAP</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="rap-download.html"><a href="rap-download.html#file-structure"><i class="fa fa-check"></i><b>2.1</b> File structure</a></li>
+<li class="chapter" data-level="2.2" data-path="rap-download.html"><a href="rap-download.html#demographic-data"><i class="fa fa-check"></i><b>2.2</b> Demographic data</a></li>
+<li class="chapter" data-level="2.3" data-path="rap-download.html"><a href="rap-download.html#metabolomics-data-nmr"><i class="fa fa-check"></i><b>2.3</b> Metabolomics data (NMR)</a></li>
+<li class="chapter" data-level="2.4" data-path="rap-download.html"><a href="rap-download.html#proteomics-data-olink"><i class="fa fa-check"></i><b>2.4</b> Proteomics data (Olink)</a></li>
+<li class="chapter" data-level="2.5" data-path="rap-download.html"><a href="rap-download.html#common-ukb-field-ids"><i class="fa fa-check"></i><b>2.5</b> Common UKB field IDs</a></li>
+<li class="chapter" data-level="2.6" data-path="rap-download.html"><a href="rap-download.html#typical-output-sizes"><i class="fa fa-check"></i><b>2.6</b> Typical output sizes</a></li>
+<li class="chapter" data-level="2.7" data-path="rap-download.html"><a href="rap-download.html#troubleshooting"><i class="fa fa-check"></i><b>2.7</b> Troubleshooting</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="preprocessing.html"><a href="preprocessing.html"><i class="fa fa-check"></i><b>3</b> Variable Preprocessing</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="preprocessing.html"><a href="preprocessing.html#available-variables"><i class="fa fa-check"></i><b>3.1</b> Available variables</a></li>
+<li class="chapter" data-level="3.2" data-path="preprocessing.html"><a href="preprocessing.html#basic-usage"><i class="fa fa-check"></i><b>3.2</b> Basic usage</a></li>
+<li class="chapter" data-level="3.3" data-path="preprocessing.html"><a href="preprocessing.html#blood-pressure"><i class="fa fa-check"></i><b>3.3</b> Blood pressure</a></li>
+<li class="chapter" data-level="3.4" data-path="preprocessing.html"><a href="preprocessing.html#medication-use"><i class="fa fa-check"></i><b>3.4</b> Medication use</a></li>
+<li class="chapter" data-level="3.5" data-path="preprocessing.html"><a href="preprocessing.html#air-pollution-exposure"><i class="fa fa-check"></i><b>3.5</b> Air pollution exposure</a></li>
+<li class="chapter" data-level="3.6" data-path="preprocessing.html"><a href="preprocessing.html#custom-variable-mapping"><i class="fa fa-check"></i><b>3.6</b> Custom variable mapping</a></li>
+<li class="chapter" data-level="3.7" data-path="preprocessing.html"><a href="preprocessing.html#complete-preprocessing-example"><i class="fa fa-check"></i><b>3.7</b> Complete preprocessing example</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="disease-definitions.html"><a href="disease-definitions.html"><i class="fa fa-check"></i><b>4</b> Disease Definitions</a>
+<ul>
+<li class="chapter" data-level="4.1" data-path="disease-definitions.html"><a href="disease-definitions.html#predefined-diseases"><i class="fa fa-check"></i><b>4.1</b> Predefined diseases</a></li>
+<li class="chapter" data-level="4.2" data-path="disease-definitions.html"><a href="disease-definitions.html#inspecting-a-definition"><i class="fa fa-check"></i><b>4.2</b> Inspecting a definition</a></li>
+<li class="chapter" data-level="4.3" data-path="disease-definitions.html"><a href="disease-definitions.html#creating-custom-definitions"><i class="fa fa-check"></i><b>4.3</b> Creating custom definitions</a></li>
+<li class="chapter" data-level="4.4" data-path="disease-definitions.html"><a href="disease-definitions.html#composite-endpoints"><i class="fa fa-check"></i><b>4.4</b> Composite endpoints</a></li>
+<li class="chapter" data-level="4.5" data-path="disease-definitions.html"><a href="disease-definitions.html#comparing-data-sources"><i class="fa fa-check"></i><b>4.5</b> Comparing data sources</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="survival-analysis.html"><a href="survival-analysis.html"><i class="fa fa-check"></i><b>5</b> Survival Analysis</a>
+<ul>
+<li class="chapter" data-level="5.1" data-path="survival-analysis.html"><a href="survival-analysis.html#quick-start"><i class="fa fa-check"></i><b>5.1</b> Quick start</a></li>
+<li class="chapter" data-level="5.2" data-path="survival-analysis.html"><a href="survival-analysis.html#output-columns"><i class="fa fa-check"></i><b>5.2</b> Output columns</a></li>
+<li class="chapter" data-level="5.3" data-path="survival-analysis.html"><a href="survival-analysis.html#participant-flow-reporting"><i class="fa fa-check"></i><b>5.3</b> Participant flow reporting</a></li>
+<li class="chapter" data-level="5.4" data-path="survival-analysis.html"><a href="survival-analysis.html#case-classification-logic"><i class="fa fa-check"></i><b>5.4</b> Case classification logic</a></li>
+<li class="chapter" data-level="5.5" data-path="survival-analysis.html"><a href="survival-analysis.html#follow-up-time"><i class="fa fa-check"></i><b>5.5</b> Follow-up time</a></li>
+<li class="chapter" data-level="5.6" data-path="survival-analysis.html"><a href="survival-analysis.html#dual-source-design"><i class="fa fa-check"></i><b>5.6</b> Dual-source design</a></li>
+<li class="chapter" data-level="5.7" data-path="survival-analysis.html"><a href="survival-analysis.html#performance-tuning-large-data"><i class="fa fa-check"></i><b>5.7</b> Performance tuning (large data)</a></li>
+<li class="chapter" data-level="5.8" data-path="survival-analysis.html"><a href="survival-analysis.html#running-a-cox-model"><i class="fa fa-check"></i><b>5.8</b> Running a Cox model</a></li>
+<li class="chapter" data-level="5.9" data-path="survival-analysis.html"><a href="survival-analysis.html#sensitivity-analyses"><i class="fa fa-check"></i><b>5.9</b> Sensitivity analyses</a></li>
+<li class="chapter" data-level="5.10" data-path="survival-analysis.html"><a href="survival-analysis.html#long-format-output"><i class="fa fa-check"></i><b>5.10</b> Long format output</a></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="baseline-table.html"><a href="baseline-table.html"><i class="fa fa-check"></i><b>6</b> Baseline Table</a>
+<ul>
+<li class="chapter" data-level="6.1" data-path="baseline-table.html"><a href="baseline-table.html#basic-usage-1"><i class="fa fa-check"></i><b>6.1</b> Basic usage</a></li>
+<li class="chapter" data-level="6.2" data-path="baseline-table.html"><a href="baseline-table.html#exporting-to-csv"><i class="fa fa-check"></i><b>6.2</b> Exporting to CSV</a></li>
+<li class="chapter" data-level="6.3" data-path="baseline-table.html"><a href="baseline-table.html#using-with-the-survival-package-example-data"><i class="fa fa-check"></i><b>6.3</b> Using with the <code>survival</code> package example data</a></li>
+<li class="chapter" data-level="6.4" data-path="baseline-table.html"><a href="baseline-table.html#parameters"><i class="fa fa-check"></i><b>6.4</b> Parameters</a></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="imputation.html"><a href="imputation.html"><i class="fa fa-check"></i><b>7</b> Multiple Imputation</a>
+<ul>
+<li class="chapter" data-level="7.1" data-path="imputation.html"><a href="imputation.html#motivation"><i class="fa fa-check"></i><b>7.1</b> Motivation</a></li>
+<li class="chapter" data-level="7.2" data-path="imputation.html"><a href="imputation.html#basic-usage-2"><i class="fa fa-check"></i><b>7.2</b> Basic usage</a></li>
+<li class="chapter" data-level="7.3" data-path="imputation.html"><a href="imputation.html#working-with-the-output"><i class="fa fa-check"></i><b>7.3</b> Working with the output</a></li>
+<li class="chapter" data-level="7.4" data-path="imputation.html"><a href="imputation.html#merging-additional-datasets"><i class="fa fa-check"></i><b>7.4</b> Merging additional datasets</a></li>
+<li class="chapter" data-level="7.5" data-path="imputation.html"><a href="imputation.html#diagnostics"><i class="fa fa-check"></i><b>7.5</b> Diagnostics</a></li>
+<li class="chapter" data-level="7.6" data-path="imputation.html"><a href="imputation.html#pooled-analysis"><i class="fa fa-check"></i><b>7.6</b> Pooled analysis</a></li>
+<li class="chapter" data-level="7.7" data-path="imputation.html"><a href="imputation.html#saving-completed-datasets"><i class="fa fa-check"></i><b>7.7</b> Saving completed datasets</a></li>
+<li class="chapter" data-level="7.8" data-path="imputation.html"><a href="imputation.html#parameters-1"><i class="fa fa-check"></i><b>7.8</b> Parameters</a></li>
+</ul></li>
+<li class="chapter" data-level="8" data-path="main-analysis.html"><a href="main-analysis.html"><i class="fa fa-check"></i><b>8</b> Main Analysis</a>
+<ul>
+<li class="chapter" data-level="8.1" data-path="main-analysis.html"><a href="main-analysis.html#correlation"><i class="fa fa-check"></i><b>8.1</b> Pre-Analysis: Correlation Check</a>
+<ul>
+<li class="chapter" data-level="8.1.1" data-path="main-analysis.html"><a href="main-analysis.html#calculate-correlation-matrix"><i class="fa fa-check"></i><b>8.1.1</b> Calculate Correlation Matrix</a></li>
+<li class="chapter" data-level="8.1.2" data-path="main-analysis.html"><a href="main-analysis.html#visualize-correlation-heatmap"><i class="fa fa-check"></i><b>8.1.2</b> Visualize Correlation Heatmap</a></li>
+</ul></li>
+<li class="chapter" data-level="8.2" data-path="main-analysis.html"><a href="main-analysis.html#regression"><i class="fa fa-check"></i><b>8.2</b> Regression Analysis</a>
+<ul>
+<li class="chapter" data-level="8.2.1" data-path="main-analysis.html"><a href="main-analysis.html#lm"><i class="fa fa-check"></i><b>8.2.1</b> Linear Regression</a></li>
+<li class="chapter" data-level="8.2.2" data-path="main-analysis.html"><a href="main-analysis.html#logistic"><i class="fa fa-check"></i><b>8.2.2</b> Logistic Regression</a></li>
+<li class="chapter" data-level="8.2.3" data-path="main-analysis.html"><a href="main-analysis.html#cox"><i class="fa fa-check"></i><b>8.2.3</b> Cox Proportional Hazards Regression</a></li>
+</ul></li>
+<li class="chapter" data-level="8.3" data-path="main-analysis.html"><a href="main-analysis.html#unified-interface"><i class="fa fa-check"></i><b>8.3</b> Unified Interface Across Models</a></li>
+<li class="chapter" data-level="8.4" data-path="main-analysis.html"><a href="main-analysis.html#best-practices"><i class="fa fa-check"></i><b>8.4</b> Best Practices</a>
+<ul>
+<li class="chapter" data-level="8.4.1" data-path="main-analysis.html"><a href="main-analysis.html#check-correlations-first"><i class="fa fa-check"></i><b>8.4.1</b> Check Correlations First</a></li>
+<li class="chapter" data-level="8.4.2" data-path="main-analysis.html"><a href="main-analysis.html#start-with-univariate-then-multivariate"><i class="fa fa-check"></i><b>8.4.2</b> Start with Univariate, Then Multivariate</a></li>
+<li class="chapter" data-level="8.4.3" data-path="main-analysis.html"><a href="main-analysis.html#validate-model-assumptions"><i class="fa fa-check"></i><b>8.4.3</b> Validate Model Assumptions</a></li>
+<li class="chapter" data-level="8.4.4" data-path="main-analysis.html"><a href="main-analysis.html#handle-missing-data-appropriately"><i class="fa fa-check"></i><b>8.4.4</b> Handle Missing Data Appropriately</a></li>
+<li class="chapter" data-level="8.4.5" data-path="main-analysis.html"><a href="main-analysis.html#run-sensitivity-analysis-preprocessing"><i class="fa fa-check"></i><b>8.4.5</b> Run Sensitivity Analysis Preprocessing</a></li>
+</ul></li>
+<li class="chapter" data-level="8.5" data-path="main-analysis.html"><a href="main-analysis.html#summary"><i class="fa fa-check"></i><b>8.5</b> Summary</a></li>
+</ul></li>
+<li class="chapter" data-level="9" data-path="advanced-analysis.html"><a href="advanced-analysis.html"><i class="fa fa-check"></i><b>9</b> Advanced Analysis Modules</a>
+<ul>
+<li class="chapter" data-level="9.1" data-path="advanced-analysis.html"><a href="advanced-analysis.html#overview"><i class="fa fa-check"></i><b>9.1</b> Overview</a></li>
+<li class="chapter" data-level="9.2" data-path="advanced-analysis.html"><a href="advanced-analysis.html#subgroup"><i class="fa fa-check"></i><b>9.2</b> Subgroup Analysis</a>
+<ul>
+<li class="chapter" data-level="9.2.1" data-path="advanced-analysis.html"><a href="advanced-analysis.html#basic-usage-3"><i class="fa fa-check"></i><b>9.2.1</b> Basic Usage</a></li>
+<li class="chapter" data-level="9.2.2" data-path="advanced-analysis.html"><a href="advanced-analysis.html#multiple-subgroup-variables"><i class="fa fa-check"></i><b>9.2.2</b> Multiple Subgroup Variables</a></li>
+<li class="chapter" data-level="9.2.3" data-path="advanced-analysis.html"><a href="advanced-analysis.html#parameters-2"><i class="fa fa-check"></i><b>9.2.3</b> Parameters</a></li>
+</ul></li>
+<li class="chapter" data-level="9.3" data-path="advanced-analysis.html"><a href="advanced-analysis.html#propensity"><i class="fa fa-check"></i><b>9.3</b> Propensity Score Methods</a>
+<ul>
+<li class="chapter" data-level="9.3.1" data-path="advanced-analysis.html"><a href="advanced-analysis.html#estimate-propensity-scores"><i class="fa fa-check"></i><b>9.3.1</b> Estimate Propensity Scores</a></li>
+<li class="chapter" data-level="9.3.2" data-path="advanced-analysis.html"><a href="advanced-analysis.html#propensity-score-matching-psm"><i class="fa fa-check"></i><b>9.3.2</b> Propensity Score Matching (PSM)</a></li>
+<li class="chapter" data-level="9.3.3" data-path="advanced-analysis.html"><a href="advanced-analysis.html#inverse-probability-of-treatment-weighting-iptw"><i class="fa fa-check"></i><b>9.3.3</b> Inverse Probability of Treatment Weighting (IPTW)</a></li>
+<li class="chapter" data-level="9.3.4" data-path="advanced-analysis.html"><a href="advanced-analysis.html#weight-types"><i class="fa fa-check"></i><b>9.3.4</b> Weight Types</a></li>
+</ul></li>
+<li class="chapter" data-level="9.4" data-path="advanced-analysis.html"><a href="advanced-analysis.html#mediation"><i class="fa fa-check"></i><b>9.4</b> Mediation Analysis</a>
+<ul>
+<li class="chapter" data-level="9.4.1" data-path="advanced-analysis.html"><a href="advanced-analysis.html#basic-mediation-analysis"><i class="fa fa-check"></i><b>9.4.1</b> Basic Mediation Analysis</a></li>
+<li class="chapter" data-level="9.4.2" data-path="advanced-analysis.html"><a href="advanced-analysis.html#effect-definitions"><i class="fa fa-check"></i><b>9.4.2</b> Effect Definitions</a></li>
+<li class="chapter" data-level="9.4.3" data-path="advanced-analysis.html"><a href="advanced-analysis.html#multiple-mediators"><i class="fa fa-check"></i><b>9.4.3</b> Multiple Mediators</a></li>
+<li class="chapter" data-level="9.4.4" data-path="advanced-analysis.html"><a href="advanced-analysis.html#visualization"><i class="fa fa-check"></i><b>9.4.4</b> Visualization</a></li>
+</ul></li>
+<li class="chapter" data-level="9.5" data-path="advanced-analysis.html"><a href="advanced-analysis.html#mi-pooling"><i class="fa fa-check"></i><b>9.5</b> Multiple Imputation Pooling</a>
+<ul>
+<li class="chapter" data-level="9.5.1" data-path="advanced-analysis.html"><a href="advanced-analysis.html#basic-usage-4"><i class="fa fa-check"></i><b>9.5.1</b> Basic Usage</a></li>
+<li class="chapter" data-level="9.5.2" data-path="advanced-analysis.html"><a href="advanced-analysis.html#one-step-fitting-and-pooling"><i class="fa fa-check"></i><b>9.5.2</b> One-Step Fitting and Pooling</a></li>
+<li class="chapter" data-level="9.5.3" data-path="advanced-analysis.html"><a href="advanced-analysis.html#supported-model-types"><i class="fa fa-check"></i><b>9.5.3</b> Supported Model Types</a></li>
+<li class="chapter" data-level="9.5.4" data-path="advanced-analysis.html"><a href="advanced-analysis.html#custom-estimates-pooling"><i class="fa fa-check"></i><b>9.5.4</b> Custom Estimates Pooling</a></li>
+<li class="chapter" data-level="9.5.5" data-path="advanced-analysis.html"><a href="advanced-analysis.html#visualization-1"><i class="fa fa-check"></i><b>9.5.5</b> Visualization</a></li>
+<li class="chapter" data-level="9.5.6" data-path="advanced-analysis.html"><a href="advanced-analysis.html#understanding-fmi"><i class="fa fa-check"></i><b>9.5.6</b> Understanding FMI</a></li>
+</ul></li>
+<li class="chapter" data-level="9.6" data-path="advanced-analysis.html"><a href="advanced-analysis.html#visualization"><i class="fa fa-check"></i><b>9.6</b> Visualization Functions</a>
+<ul>
+<li class="chapter" data-level="9.6.1" data-path="advanced-analysis.html"><a href="advanced-analysis.html#forest-plot"><i class="fa fa-check"></i><b>9.6.1</b> Forest Plot</a></li>
+<li class="chapter" data-level="9.6.2" data-path="advanced-analysis.html"><a href="advanced-analysis.html#kaplan-meier-curves"><i class="fa fa-check"></i><b>9.6.2</b> Kaplan-Meier Curves</a></li>
+<li class="chapter" data-level="9.6.3" data-path="advanced-analysis.html"><a href="advanced-analysis.html#propensity-score-plots"><i class="fa fa-check"></i><b>9.6.3</b> Propensity Score Plots</a></li>
+</ul></li>
+<li class="chapter" data-level="9.7" data-path="advanced-analysis.html"><a href="advanced-analysis.html#workflow"><i class="fa fa-check"></i><b>9.7</b> Integration Example: Complete Workflow</a></li>
+<li class="chapter" data-level="9.8" data-path="advanced-analysis.html"><a href="advanced-analysis.html#summary-1"><i class="fa fa-check"></i><b>9.8</b> Summary</a></li>
+<li class="chapter" data-level="9.9" data-path="advanced-analysis.html"><a href="advanced-analysis.html#machine-learning"><i class="fa fa-check"></i><b>9.9</b> Machine Learning Module</a>
+<ul>
+<li class="chapter" data-level="9.9.1" data-path="advanced-analysis.html"><a href="advanced-analysis.html#supported-models"><i class="fa fa-check"></i><b>9.9.1</b> Supported Models</a></li>
+<li class="chapter" data-level="9.9.2" data-path="advanced-analysis.html"><a href="advanced-analysis.html#basic-usage-5"><i class="fa fa-check"></i><b>9.9.2</b> Basic Usage</a></li>
+<li class="chapter" data-level="9.9.3" data-path="advanced-analysis.html"><a href="advanced-analysis.html#model-evaluation"><i class="fa fa-check"></i><b>9.9.3</b> Model Evaluation</a></li>
+<li class="chapter" data-level="9.9.4" data-path="advanced-analysis.html"><a href="advanced-analysis.html#cross-validation"><i class="fa fa-check"></i><b>9.9.4</b> Cross-Validation</a></li>
+<li class="chapter" data-level="9.9.5" data-path="advanced-analysis.html"><a href="advanced-analysis.html#model-comparison"><i class="fa fa-check"></i><b>9.9.5</b> Model Comparison</a></li>
+<li class="chapter" data-level="9.9.6" data-path="advanced-analysis.html"><a href="advanced-analysis.html#shap-interpretation"><i class="fa fa-check"></i><b>9.9.6</b> SHAP Interpretation</a></li>
+<li class="chapter" data-level="9.9.7" data-path="advanced-analysis.html"><a href="advanced-analysis.html#survival-ml-models"><i class="fa fa-check"></i><b>9.9.7</b> Survival ML Models</a></li>
+<li class="chapter" data-level="9.9.8" data-path="advanced-analysis.html"><a href="advanced-analysis.html#integration-with-other-modules"><i class="fa fa-check"></i><b>9.9.8</b> Integration with Other Modules</a></li>
+<li class="chapter" data-level="9.9.9" data-path="advanced-analysis.html"><a href="advanced-analysis.html#required-packages"><i class="fa fa-check"></i><b>9.9.9</b> Required Packages</a></li>
+<li class="chapter" data-level="9.9.10" data-path="advanced-analysis.html"><a href="advanced-analysis.html#required-packages-all-modules"><i class="fa fa-check"></i><b>9.9.10</b> Required Packages (All Modules)</a></li>
+</ul></li>
+</ul></li>
+<li class="divider"></li>
+<li><a href="https://github.com/Hinna0818/UKBAnalytica_v2" target="_blank">GitHub</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">UKBAnalytica: A Guide to UK Biobank Data Analysis</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="advanced-analysis" class="section level1 hasAnchor" number="9">
+<h1><span class="header-section-number">Chapter 9</span> Advanced Analysis Modules<a href="advanced-analysis.html#advanced-analysis" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<p>This chapter covers the advanced statistical analysis modules in <strong>UKBAnalytica</strong>, including subgroup analysis, propensity score methods, mediation analysis, and multiple imputation pooling.</p>
+<div id="overview" class="section level2 hasAnchor" number="9.1">
+<h2><span class="header-section-number">9.1</span> Overview<a href="advanced-analysis.html#overview" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<table>
+<colgroup>
+<col width="34%" />
+<col width="26%" />
+<col width="39%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Module</th>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Subgroup Analysis</td>
+<td><code>subgroup.R</code></td>
+<td>Stratified analysis with interaction p-values</td>
+</tr>
+<tr class="even">
+<td>Propensity Score</td>
+<td><code>propensity.R</code></td>
+<td>PSM matching and IPTW weighting</td>
+</tr>
+<tr class="odd">
+<td>Mediation Analysis</td>
+<td><code>mediation.R</code></td>
+<td>Causal mediation (based on regmedint)</td>
+</tr>
+<tr class="even">
+<td>MI Pooling</td>
+<td><code>mi_pool.R</code></td>
+<td>Multiple imputation result combining</td>
+</tr>
+<tr class="odd">
+<td>Visualization</td>
+<td><code>visualization.R</code></td>
+<td>Forest plots, K-M curves, diagnostic plots</td>
+</tr>
+</tbody>
+</table>
+<hr />
+</div>
+<div id="subgroup" class="section level2 hasAnchor" number="9.2">
+<h2><span class="header-section-number">9.2</span> Subgroup Analysis<a href="advanced-analysis.html#subgroup" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Subgroup (stratified) analysis examines whether treatment effects vary across patient subgroups and calculates interaction p-values.</p>
+<div id="basic-usage-3" class="section level3 hasAnchor" number="9.2.1">
+<h3><span class="header-section-number">9.2.1</span> Basic Usage<a href="advanced-analysis.html#basic-usage-3" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="advanced-analysis.html#cb49-1" tabindex="-1"></a><span class="fu">library</span>(UKBAnalytica)</span>
+<span id="cb49-2"><a href="advanced-analysis.html#cb49-2" tabindex="-1"></a></span>
+<span id="cb49-3"><a href="advanced-analysis.html#cb49-3" tabindex="-1"></a><span class="co"># Run subgroup analysis by age group</span></span>
+<span id="cb49-4"><a href="advanced-analysis.html#cb49-4" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">run_subgroup_analysis</span>(</span>
+<span id="cb49-5"><a href="advanced-analysis.html#cb49-5" tabindex="-1"></a>  <span class="at">data =</span> dt,</span>
+<span id="cb49-6"><a href="advanced-analysis.html#cb49-6" tabindex="-1"></a>  <span class="at">exposure =</span> <span class="st">&quot;treatment&quot;</span>,</span>
+<span id="cb49-7"><a href="advanced-analysis.html#cb49-7" tabindex="-1"></a>  <span class="at">outcome =</span> <span class="st">&quot;event&quot;</span>,</span>
+<span id="cb49-8"><a href="advanced-analysis.html#cb49-8" tabindex="-1"></a>  <span class="at">subgroup_var =</span> <span class="st">&quot;age_group&quot;</span>,</span>
+<span id="cb49-9"><a href="advanced-analysis.html#cb49-9" tabindex="-1"></a>  <span class="at">covariates =</span> <span class="fu">c</span>(<span class="st">&quot;sex&quot;</span>, <span class="st">&quot;bmi&quot;</span>),</span>
+<span id="cb49-10"><a href="advanced-analysis.html#cb49-10" tabindex="-1"></a>  <span class="at">model_type =</span> <span class="st">&quot;cox&quot;</span>,</span>
+<span id="cb49-11"><a href="advanced-analysis.html#cb49-11" tabindex="-1"></a>  <span class="at">endpoint =</span> <span class="fu">c</span>(<span class="st">&quot;time&quot;</span>, <span class="st">&quot;status&quot;</span>)</span>
+<span id="cb49-12"><a href="advanced-analysis.html#cb49-12" tabindex="-1"></a>)</span>
+<span id="cb49-13"><a href="advanced-analysis.html#cb49-13" tabindex="-1"></a></span>
+<span id="cb49-14"><a href="advanced-analysis.html#cb49-14" tabindex="-1"></a><span class="fu">print</span>(result)</span>
+<span id="cb49-15"><a href="advanced-analysis.html#cb49-15" tabindex="-1"></a><span class="co">#&gt;     subgroup  n n_event    HR lower95 upper95  pvalue p_interaction</span></span>
+<span id="cb49-16"><a href="advanced-analysis.html#cb49-16" tabindex="-1"></a><span class="co">#&gt; 1  &lt;50 years 500     45  1.25    0.85    1.84   0.256         0.032</span></span>
+<span id="cb49-17"><a href="advanced-analysis.html#cb49-17" tabindex="-1"></a><span class="co">#&gt; 2 50-65 years 800     92  1.58    1.12    2.23   0.009         0.032</span></span>
+<span id="cb49-18"><a href="advanced-analysis.html#cb49-18" tabindex="-1"></a><span class="co">#&gt; 3  &gt;65 years 400     78  0.89    0.62    1.28   0.532         0.032</span></span></code></pre></div>
+</div>
+<div id="multiple-subgroup-variables" class="section level3 hasAnchor" number="9.2.2">
+<h3><span class="header-section-number">9.2.2</span> Multiple Subgroup Variables<a href="advanced-analysis.html#multiple-subgroup-variables" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb50-1"><a href="advanced-analysis.html#cb50-1" tabindex="-1"></a><span class="co"># Analyze multiple subgroup variables at once</span></span>
+<span id="cb50-2"><a href="advanced-analysis.html#cb50-2" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">run_multi_subgroup</span>(</span>
+<span id="cb50-3"><a href="advanced-analysis.html#cb50-3" tabindex="-1"></a>  <span class="at">data =</span> dt,</span>
+<span id="cb50-4"><a href="advanced-analysis.html#cb50-4" tabindex="-1"></a>  <span class="at">exposure =</span> <span class="st">&quot;treatment&quot;</span>,</span>
+<span id="cb50-5"><a href="advanced-analysis.html#cb50-5" tabindex="-1"></a>  <span class="at">outcome =</span> <span class="st">&quot;event&quot;</span>,</span>
+<span id="cb50-6"><a href="advanced-analysis.html#cb50-6" tabindex="-1"></a>  <span class="at">subgroup_vars =</span> <span class="fu">c</span>(<span class="st">&quot;age_group&quot;</span>, <span class="st">&quot;sex&quot;</span>, <span class="st">&quot;smoking_status&quot;</span>),</span>
+<span id="cb50-7"><a href="advanced-analysis.html#cb50-7" tabindex="-1"></a>  <span class="at">covariates =</span> <span class="fu">c</span>(<span class="st">&quot;bmi&quot;</span>, <span class="st">&quot;diabetes&quot;</span>),</span>
+<span id="cb50-8"><a href="advanced-analysis.html#cb50-8" tabindex="-1"></a>  <span class="at">model_type =</span> <span class="st">&quot;cox&quot;</span>,</span>
+<span id="cb50-9"><a href="advanced-analysis.html#cb50-9" tabindex="-1"></a>  <span class="at">endpoint =</span> <span class="fu">c</span>(<span class="st">&quot;time&quot;</span>, <span class="st">&quot;status&quot;</span>)</span>
+<span id="cb50-10"><a href="advanced-analysis.html#cb50-10" tabindex="-1"></a>)</span>
+<span id="cb50-11"><a href="advanced-analysis.html#cb50-11" tabindex="-1"></a></span>
+<span id="cb50-12"><a href="advanced-analysis.html#cb50-12" tabindex="-1"></a><span class="co"># Create forest plot</span></span>
+<span id="cb50-13"><a href="advanced-analysis.html#cb50-13" tabindex="-1"></a><span class="fu">plot_forest</span>(results, <span class="at">title =</span> <span class="st">&quot;Subgroup Analysis: Treatment Effect&quot;</span>)</span></code></pre></div>
+</div>
+<div id="parameters-2" class="section level3 hasAnchor" number="9.2.3">
+<h3><span class="header-section-number">9.2.3</span> Parameters<a href="advanced-analysis.html#parameters-2" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<table>
+<thead>
+<tr class="header">
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>exposure</code></td>
+<td>Treatment/exposure variable name</td>
+</tr>
+<tr class="even">
+<td><code>outcome</code></td>
+<td>Outcome variable (for logistic/linear)</td>
+</tr>
+<tr class="odd">
+<td><code>subgroup_var</code></td>
+<td>Variable defining subgroups</td>
+</tr>
+<tr class="even">
+<td><code>model_type</code></td>
+<td><code>"cox"</code>, <code>"logistic"</code>, or <code>"linear"</code></td>
+</tr>
+<tr class="odd">
+<td><code>endpoint</code></td>
+<td>For Cox: <code>c("time_var", "status_var")</code></td>
+</tr>
+<tr class="even">
+<td><code>ref_level</code></td>
+<td>Reference level for subgroup variable</td>
+</tr>
+</tbody>
+</table>
+<hr />
+</div>
+</div>
+<div id="propensity" class="section level2 hasAnchor" number="9.3">
+<h2><span class="header-section-number">9.3</span> Propensity Score Methods<a href="advanced-analysis.html#propensity" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Propensity score methods help control for confounding in observational studies.</p>
+<div id="estimate-propensity-scores" class="section level3 hasAnchor" number="9.3.1">
+<h3><span class="header-section-number">9.3.1</span> Estimate Propensity Scores<a href="advanced-analysis.html#estimate-propensity-scores" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb51-1"><a href="advanced-analysis.html#cb51-1" tabindex="-1"></a><span class="co"># Estimate propensity scores using logistic regression</span></span>
+<span id="cb51-2"><a href="advanced-analysis.html#cb51-2" tabindex="-1"></a>ps_result <span class="ot">&lt;-</span> <span class="fu">estimate_propensity_score</span>(</span>
+<span id="cb51-3"><a href="advanced-analysis.html#cb51-3" tabindex="-1"></a>  <span class="at">data =</span> dt,</span>
+<span id="cb51-4"><a href="advanced-analysis.html#cb51-4" tabindex="-1"></a>  <span class="at">treatment =</span> <span class="st">&quot;treatment&quot;</span>,</span>
+<span id="cb51-5"><a href="advanced-analysis.html#cb51-5" tabindex="-1"></a>  <span class="at">covariates =</span> <span class="fu">c</span>(<span class="st">&quot;age&quot;</span>, <span class="st">&quot;sex&quot;</span>, <span class="st">&quot;bmi&quot;</span>, <span class="st">&quot;smoking&quot;</span>, <span class="st">&quot;diabetes&quot;</span>),</span>
+<span id="cb51-6"><a href="advanced-analysis.html#cb51-6" tabindex="-1"></a>  <span class="at">method =</span> <span class="st">&quot;logistic&quot;</span>  <span class="co"># or &quot;gbm&quot; for gradient boosting</span></span>
+<span id="cb51-7"><a href="advanced-analysis.html#cb51-7" tabindex="-1"></a>)</span>
+<span id="cb51-8"><a href="advanced-analysis.html#cb51-8" tabindex="-1"></a></span>
+<span id="cb51-9"><a href="advanced-analysis.html#cb51-9" tabindex="-1"></a><span class="co"># Add PS to data</span></span>
+<span id="cb51-10"><a href="advanced-analysis.html#cb51-10" tabindex="-1"></a>dt<span class="sc">$</span>ps <span class="ot">&lt;-</span> ps_result<span class="sc">$</span>ps</span>
+<span id="cb51-11"><a href="advanced-analysis.html#cb51-11" tabindex="-1"></a></span>
+<span id="cb51-12"><a href="advanced-analysis.html#cb51-12" tabindex="-1"></a><span class="co"># Visualize PS distribution</span></span>
+<span id="cb51-13"><a href="advanced-analysis.html#cb51-13" tabindex="-1"></a><span class="fu">plot_ps_distribution</span>(ps_result, <span class="at">type =</span> <span class="st">&quot;histogram&quot;</span>)</span>
+<span id="cb51-14"><a href="advanced-analysis.html#cb51-14" tabindex="-1"></a><span class="fu">plot_ps_distribution</span>(ps_result, <span class="at">type =</span> <span class="st">&quot;density&quot;</span>)</span></code></pre></div>
+</div>
+<div id="propensity-score-matching-psm" class="section level3 hasAnchor" number="9.3.2">
+<h3><span class="header-section-number">9.3.2</span> Propensity Score Matching (PSM)<a href="advanced-analysis.html#propensity-score-matching-psm" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb52-1"><a href="advanced-analysis.html#cb52-1" tabindex="-1"></a><span class="co"># Perform 1:1 nearest neighbor matching</span></span>
+<span id="cb52-2"><a href="advanced-analysis.html#cb52-2" tabindex="-1"></a>matched <span class="ot">&lt;-</span> <span class="fu">match_propensity</span>(</span>
+<span id="cb52-3"><a href="advanced-analysis.html#cb52-3" tabindex="-1"></a>  <span class="at">data =</span> dt,</span>
+<span id="cb52-4"><a href="advanced-analysis.html#cb52-4" tabindex="-1"></a>  <span class="at">treatment =</span> <span class="st">&quot;treatment&quot;</span>,</span>
+<span id="cb52-5"><a href="advanced-analysis.html#cb52-5" tabindex="-1"></a>  <span class="at">ps =</span> dt<span class="sc">$</span>ps,</span>
+<span id="cb52-6"><a href="advanced-analysis.html#cb52-6" tabindex="-1"></a>  <span class="at">ratio =</span> <span class="dv">1</span>,</span>
+<span id="cb52-7"><a href="advanced-analysis.html#cb52-7" tabindex="-1"></a>  <span class="at">caliper =</span> <span class="fl">0.2</span>,  <span class="co"># 0.2 * SD of PS</span></span>
+<span id="cb52-8"><a href="advanced-analysis.html#cb52-8" tabindex="-1"></a>  <span class="at">method =</span> <span class="st">&quot;nearest&quot;</span></span>
+<span id="cb52-9"><a href="advanced-analysis.html#cb52-9" tabindex="-1"></a>)</span>
+<span id="cb52-10"><a href="advanced-analysis.html#cb52-10" tabindex="-1"></a></span>
+<span id="cb52-11"><a href="advanced-analysis.html#cb52-11" tabindex="-1"></a><span class="co"># Check balance</span></span>
+<span id="cb52-12"><a href="advanced-analysis.html#cb52-12" tabindex="-1"></a>balance <span class="ot">&lt;-</span> <span class="fu">assess_balance</span>(</span>
+<span id="cb52-13"><a href="advanced-analysis.html#cb52-13" tabindex="-1"></a>  <span class="at">data =</span> matched<span class="sc">$</span>matched_data,</span>
+<span id="cb52-14"><a href="advanced-analysis.html#cb52-14" tabindex="-1"></a>  <span class="at">treatment =</span> <span class="st">&quot;treatment&quot;</span>,</span>
+<span id="cb52-15"><a href="advanced-analysis.html#cb52-15" tabindex="-1"></a>  <span class="at">covariates =</span> <span class="fu">c</span>(<span class="st">&quot;age&quot;</span>, <span class="st">&quot;sex&quot;</span>, <span class="st">&quot;bmi&quot;</span>, <span class="st">&quot;smoking&quot;</span>, <span class="st">&quot;diabetes&quot;</span>)</span>
+<span id="cb52-16"><a href="advanced-analysis.html#cb52-16" tabindex="-1"></a>)</span>
+<span id="cb52-17"><a href="advanced-analysis.html#cb52-17" tabindex="-1"></a><span class="fu">print</span>(balance)</span>
+<span id="cb52-18"><a href="advanced-analysis.html#cb52-18" tabindex="-1"></a></span>
+<span id="cb52-19"><a href="advanced-analysis.html#cb52-19" tabindex="-1"></a><span class="co"># Visualize balance improvement</span></span>
+<span id="cb52-20"><a href="advanced-analysis.html#cb52-20" tabindex="-1"></a><span class="fu">plot_balance</span>(balance, <span class="at">title =</span> <span class="st">&quot;Covariate Balance: Before vs After Matching&quot;</span>)</span></code></pre></div>
+</div>
+<div id="inverse-probability-of-treatment-weighting-iptw" class="section level3 hasAnchor" number="9.3.3">
+<h3><span class="header-section-number">9.3.3</span> Inverse Probability of Treatment Weighting (IPTW)<a href="advanced-analysis.html#inverse-probability-of-treatment-weighting-iptw" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb53-1"><a href="advanced-analysis.html#cb53-1" tabindex="-1"></a><span class="co"># Calculate IPTW weights</span></span>
+<span id="cb53-2"><a href="advanced-analysis.html#cb53-2" tabindex="-1"></a>dt<span class="sc">$</span>weight <span class="ot">&lt;-</span> <span class="fu">calculate_weights</span>(</span>
+<span id="cb53-3"><a href="advanced-analysis.html#cb53-3" tabindex="-1"></a>  <span class="at">ps =</span> dt<span class="sc">$</span>ps,</span>
+<span id="cb53-4"><a href="advanced-analysis.html#cb53-4" tabindex="-1"></a>  <span class="at">treatment =</span> dt<span class="sc">$</span>treatment,</span>
+<span id="cb53-5"><a href="advanced-analysis.html#cb53-5" tabindex="-1"></a>  <span class="at">type =</span> <span class="st">&quot;ate&quot;</span>  <span class="co"># or &quot;att&quot;, &quot;atc&quot;</span></span>
+<span id="cb53-6"><a href="advanced-analysis.html#cb53-6" tabindex="-1"></a>)</span>
+<span id="cb53-7"><a href="advanced-analysis.html#cb53-7" tabindex="-1"></a></span>
+<span id="cb53-8"><a href="advanced-analysis.html#cb53-8" tabindex="-1"></a><span class="co"># Run weighted analysis</span></span>
+<span id="cb53-9"><a href="advanced-analysis.html#cb53-9" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">run_weighted_analysis</span>(</span>
+<span id="cb53-10"><a href="advanced-analysis.html#cb53-10" tabindex="-1"></a>  <span class="at">data =</span> dt,</span>
+<span id="cb53-11"><a href="advanced-analysis.html#cb53-11" tabindex="-1"></a>  <span class="at">treatment =</span> <span class="st">&quot;treatment&quot;</span>,</span>
+<span id="cb53-12"><a href="advanced-analysis.html#cb53-12" tabindex="-1"></a>  <span class="at">outcome =</span> <span class="st">&quot;event&quot;</span>,</span>
+<span id="cb53-13"><a href="advanced-analysis.html#cb53-13" tabindex="-1"></a>  <span class="at">weights =</span> <span class="st">&quot;weight&quot;</span>,</span>
+<span id="cb53-14"><a href="advanced-analysis.html#cb53-14" tabindex="-1"></a>  <span class="at">model_type =</span> <span class="st">&quot;cox&quot;</span>,</span>
+<span id="cb53-15"><a href="advanced-analysis.html#cb53-15" tabindex="-1"></a>  <span class="at">endpoint =</span> <span class="fu">c</span>(<span class="st">&quot;time&quot;</span>, <span class="st">&quot;status&quot;</span>)</span>
+<span id="cb53-16"><a href="advanced-analysis.html#cb53-16" tabindex="-1"></a>)</span>
+<span id="cb53-17"><a href="advanced-analysis.html#cb53-17" tabindex="-1"></a><span class="fu">print</span>(result)</span></code></pre></div>
+</div>
+<div id="weight-types" class="section level3 hasAnchor" number="9.3.4">
+<h3><span class="header-section-number">9.3.4</span> Weight Types<a href="advanced-analysis.html#weight-types" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<table>
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Formula</th>
+<th>Use Case</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>"ate"</code></td>
+<td>T/PS + (1-T)/(1-PS)</td>
+<td>Average Treatment Effect</td>
+</tr>
+<tr class="even">
+<td><code>"att"</code></td>
+<td>T + (1-T)*PS/(1-PS)</td>
+<td>Effect on Treated</td>
+</tr>
+<tr class="odd">
+<td><code>"atc"</code></td>
+<td>T*(1-PS)/PS + (1-T)</td>
+<td>Effect on Controls</td>
+</tr>
+</tbody>
+</table>
+<hr />
+</div>
+</div>
+<div id="mediation" class="section level2 hasAnchor" number="9.4">
+<h2><span class="header-section-number">9.4</span> Mediation Analysis<a href="advanced-analysis.html#mediation" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Causal mediation analysis decomposes the total effect into direct and indirect effects, using the <code>regmedint</code> package as backend.</p>
+<div id="basic-mediation-analysis" class="section level3 hasAnchor" number="9.4.1">
+<h3><span class="header-section-number">9.4.1</span> Basic Mediation Analysis<a href="advanced-analysis.html#basic-mediation-analysis" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb54"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb54-1"><a href="advanced-analysis.html#cb54-1" tabindex="-1"></a><span class="co"># Run mediation analysis</span></span>
+<span id="cb54-2"><a href="advanced-analysis.html#cb54-2" tabindex="-1"></a>med_result <span class="ot">&lt;-</span> <span class="fu">run_mediation</span>(</span>
+<span id="cb54-3"><a href="advanced-analysis.html#cb54-3" tabindex="-1"></a>  <span class="at">data =</span> dt,</span>
+<span id="cb54-4"><a href="advanced-analysis.html#cb54-4" tabindex="-1"></a>  <span class="at">exposure =</span> <span class="st">&quot;treatment&quot;</span>,</span>
+<span id="cb54-5"><a href="advanced-analysis.html#cb54-5" tabindex="-1"></a>  <span class="at">mediator =</span> <span class="st">&quot;inflammation&quot;</span>,</span>
+<span id="cb54-6"><a href="advanced-analysis.html#cb54-6" tabindex="-1"></a>  <span class="at">outcome =</span> <span class="st">&quot;cvd_event&quot;</span>,</span>
+<span id="cb54-7"><a href="advanced-analysis.html#cb54-7" tabindex="-1"></a>  <span class="at">covariates =</span> <span class="fu">c</span>(<span class="st">&quot;age&quot;</span>, <span class="st">&quot;sex&quot;</span>, <span class="st">&quot;bmi&quot;</span>),</span>
+<span id="cb54-8"><a href="advanced-analysis.html#cb54-8" tabindex="-1"></a>  <span class="at">outcome_type =</span> <span class="st">&quot;cox&quot;</span>,        <span class="co"># &quot;linear&quot;, &quot;logistic&quot;, or &quot;cox&quot;</span></span>
+<span id="cb54-9"><a href="advanced-analysis.html#cb54-9" tabindex="-1"></a>  <span class="at">mediator_type =</span> <span class="st">&quot;linear&quot;</span>,    <span class="co"># &quot;linear&quot; or &quot;logistic&quot;</span></span>
+<span id="cb54-10"><a href="advanced-analysis.html#cb54-10" tabindex="-1"></a>  <span class="at">event_var =</span> <span class="st">&quot;status&quot;</span>,        <span class="co"># For Cox models</span></span>
+<span id="cb54-11"><a href="advanced-analysis.html#cb54-11" tabindex="-1"></a>  <span class="at">time_var =</span> <span class="st">&quot;time&quot;</span>,           <span class="co"># For Cox models</span></span>
+<span id="cb54-12"><a href="advanced-analysis.html#cb54-12" tabindex="-1"></a>  <span class="at">a0 =</span> <span class="dv">0</span>, <span class="at">a1 =</span> <span class="dv">1</span>,              <span class="co"># Exposure contrast</span></span>
+<span id="cb54-13"><a href="advanced-analysis.html#cb54-13" tabindex="-1"></a>  <span class="at">m_cde =</span> <span class="dv">0</span>,                   <span class="co"># Mediator value for CDE</span></span>
+<span id="cb54-14"><a href="advanced-analysis.html#cb54-14" tabindex="-1"></a>  <span class="at">boot =</span> <span class="cn">TRUE</span>,                 <span class="co"># Bootstrap CIs</span></span>
+<span id="cb54-15"><a href="advanced-analysis.html#cb54-15" tabindex="-1"></a>  <span class="at">nboot =</span> <span class="dv">1000</span></span>
+<span id="cb54-16"><a href="advanced-analysis.html#cb54-16" tabindex="-1"></a>)</span>
+<span id="cb54-17"><a href="advanced-analysis.html#cb54-17" tabindex="-1"></a></span>
+<span id="cb54-18"><a href="advanced-analysis.html#cb54-18" tabindex="-1"></a><span class="co"># View results</span></span>
+<span id="cb54-19"><a href="advanced-analysis.html#cb54-19" tabindex="-1"></a><span class="fu">summary</span>(med_result)</span>
+<span id="cb54-20"><a href="advanced-analysis.html#cb54-20" tabindex="-1"></a><span class="co">#&gt; Mediation Analysis Results</span></span>
+<span id="cb54-21"><a href="advanced-analysis.html#cb54-21" tabindex="-1"></a><span class="co">#&gt; ==========================</span></span>
+<span id="cb54-22"><a href="advanced-analysis.html#cb54-22" tabindex="-1"></a><span class="co">#&gt; Exposure: treatment (0 vs 1)</span></span>
+<span id="cb54-23"><a href="advanced-analysis.html#cb54-23" tabindex="-1"></a><span class="co">#&gt; Mediator: inflammation</span></span>
+<span id="cb54-24"><a href="advanced-analysis.html#cb54-24" tabindex="-1"></a><span class="co">#&gt; Outcome: cvd_event (Cox model)</span></span>
+<span id="cb54-25"><a href="advanced-analysis.html#cb54-25" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb54-26"><a href="advanced-analysis.html#cb54-26" tabindex="-1"></a><span class="co">#&gt;         Effect  Estimate   Std.Err   95% CI          P-value</span></span>
+<span id="cb54-27"><a href="advanced-analysis.html#cb54-27" tabindex="-1"></a><span class="co">#&gt;         CDE     0.234      0.089     [0.060, 0.408]  0.008</span></span>
+<span id="cb54-28"><a href="advanced-analysis.html#cb54-28" tabindex="-1"></a><span class="co">#&gt;         PNDE    0.198      0.082     [0.037, 0.359]  0.016</span></span>
+<span id="cb54-29"><a href="advanced-analysis.html#cb54-29" tabindex="-1"></a><span class="co">#&gt;         TNIE    0.156      0.045     [0.068, 0.244]  &lt;0.001</span></span>
+<span id="cb54-30"><a href="advanced-analysis.html#cb54-30" tabindex="-1"></a><span class="co">#&gt;         TE      0.354      0.095     [0.168, 0.540]  &lt;0.001</span></span>
+<span id="cb54-31"><a href="advanced-analysis.html#cb54-31" tabindex="-1"></a><span class="co">#&gt;         PM      44.1%      -         -               -</span></span></code></pre></div>
+</div>
+<div id="effect-definitions" class="section level3 hasAnchor" number="9.4.2">
+<h3><span class="header-section-number">9.4.2</span> Effect Definitions<a href="advanced-analysis.html#effect-definitions" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<table>
+<thead>
+<tr class="header">
+<th>Effect</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>CDE</td>
+<td>Controlled Direct Effect (setting M=m)</td>
+</tr>
+<tr class="even">
+<td>PNDE</td>
+<td>Pure Natural Direct Effect</td>
+</tr>
+<tr class="odd">
+<td>TNIE</td>
+<td>Total Natural Indirect Effect</td>
+</tr>
+<tr class="even">
+<td>TE</td>
+<td>Total Effect (PNDE + TNIE)</td>
+</tr>
+<tr class="odd">
+<td>PM</td>
+<td>Proportion Mediated (TNIE/TE)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="multiple-mediators" class="section level3 hasAnchor" number="9.4.3">
+<h3><span class="header-section-number">9.4.3</span> Multiple Mediators<a href="advanced-analysis.html#multiple-mediators" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="advanced-analysis.html#cb55-1" tabindex="-1"></a><span class="co"># Test multiple mediators</span></span>
+<span id="cb55-2"><a href="advanced-analysis.html#cb55-2" tabindex="-1"></a>multi_results <span class="ot">&lt;-</span> <span class="fu">run_multi_mediator</span>(</span>
+<span id="cb55-3"><a href="advanced-analysis.html#cb55-3" tabindex="-1"></a>  <span class="at">data =</span> dt,</span>
+<span id="cb55-4"><a href="advanced-analysis.html#cb55-4" tabindex="-1"></a>  <span class="at">exposure =</span> <span class="st">&quot;treatment&quot;</span>,</span>
+<span id="cb55-5"><a href="advanced-analysis.html#cb55-5" tabindex="-1"></a>  <span class="at">mediators =</span> <span class="fu">c</span>(<span class="st">&quot;inflammation&quot;</span>, <span class="st">&quot;oxidative_stress&quot;</span>, <span class="st">&quot;insulin_resistance&quot;</span>),</span>
+<span id="cb55-6"><a href="advanced-analysis.html#cb55-6" tabindex="-1"></a>  <span class="at">outcome =</span> <span class="st">&quot;cvd_event&quot;</span>,</span>
+<span id="cb55-7"><a href="advanced-analysis.html#cb55-7" tabindex="-1"></a>  <span class="at">covariates =</span> <span class="fu">c</span>(<span class="st">&quot;age&quot;</span>, <span class="st">&quot;sex&quot;</span>),</span>
+<span id="cb55-8"><a href="advanced-analysis.html#cb55-8" tabindex="-1"></a>  <span class="at">outcome_type =</span> <span class="st">&quot;cox&quot;</span>,</span>
+<span id="cb55-9"><a href="advanced-analysis.html#cb55-9" tabindex="-1"></a>  <span class="at">event_var =</span> <span class="st">&quot;status&quot;</span>,</span>
+<span id="cb55-10"><a href="advanced-analysis.html#cb55-10" tabindex="-1"></a>  <span class="at">time_var =</span> <span class="st">&quot;time&quot;</span></span>
+<span id="cb55-11"><a href="advanced-analysis.html#cb55-11" tabindex="-1"></a>)</span>
+<span id="cb55-12"><a href="advanced-analysis.html#cb55-12" tabindex="-1"></a></span>
+<span id="cb55-13"><a href="advanced-analysis.html#cb55-13" tabindex="-1"></a><span class="co"># Forest plot of indirect effects</span></span>
+<span id="cb55-14"><a href="advanced-analysis.html#cb55-14" tabindex="-1"></a><span class="fu">plot_mediation_forest</span>(multi_results, <span class="at">effect_type =</span> <span class="st">&quot;tnie&quot;</span>)</span></code></pre></div>
+</div>
+<div id="visualization" class="section level3 hasAnchor" number="9.4.4">
+<h3><span class="header-section-number">9.4.4</span> Visualization<a href="advanced-analysis.html#visualization" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb56"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb56-1"><a href="advanced-analysis.html#cb56-1" tabindex="-1"></a><span class="co"># Effect bar chart</span></span>
+<span id="cb56-2"><a href="advanced-analysis.html#cb56-2" tabindex="-1"></a><span class="fu">plot_mediation</span>(med_result, <span class="at">type =</span> <span class="st">&quot;effects&quot;</span>)</span>
+<span id="cb56-3"><a href="advanced-analysis.html#cb56-3" tabindex="-1"></a></span>
+<span id="cb56-4"><a href="advanced-analysis.html#cb56-4" tabindex="-1"></a><span class="co"># Effect decomposition</span></span>
+<span id="cb56-5"><a href="advanced-analysis.html#cb56-5" tabindex="-1"></a><span class="fu">plot_mediation</span>(med_result, <span class="at">type =</span> <span class="st">&quot;decomposition&quot;</span>)</span>
+<span id="cb56-6"><a href="advanced-analysis.html#cb56-6" tabindex="-1"></a></span>
+<span id="cb56-7"><a href="advanced-analysis.html#cb56-7" tabindex="-1"></a><span class="co"># Path diagram</span></span>
+<span id="cb56-8"><a href="advanced-analysis.html#cb56-8" tabindex="-1"></a><span class="fu">plot_mediation</span>(med_result, <span class="at">type =</span> <span class="st">&quot;path&quot;</span>)</span></code></pre></div>
+<hr />
+</div>
+</div>
+<div id="mi-pooling" class="section level2 hasAnchor" number="9.5">
+<h2><span class="header-section-number">9.5</span> Multiple Imputation Pooling<a href="advanced-analysis.html#mi-pooling" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>When using multiple imputation for missing data, results from each imputed dataset must be combined using Rubin’s Rules.</p>
+<div id="basic-usage-4" class="section level3 hasAnchor" number="9.5.1">
+<h3><span class="header-section-number">9.5.1</span> Basic Usage<a href="advanced-analysis.html#basic-usage-4" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb57-1"><a href="advanced-analysis.html#cb57-1" tabindex="-1"></a><span class="co"># Assume mi_datasets is a list of imputed datasets from mice</span></span>
+<span id="cb57-2"><a href="advanced-analysis.html#cb57-2" tabindex="-1"></a><span class="co"># mi_data &lt;- mice(original_data, m = 20)</span></span>
+<span id="cb57-3"><a href="advanced-analysis.html#cb57-3" tabindex="-1"></a><span class="co"># mi_datasets &lt;- complete(mi_data, action = &quot;all&quot;)</span></span>
+<span id="cb57-4"><a href="advanced-analysis.html#cb57-4" tabindex="-1"></a></span>
+<span id="cb57-5"><a href="advanced-analysis.html#cb57-5" tabindex="-1"></a><span class="co"># Method 1: Fit models first, then pool</span></span>
+<span id="cb57-6"><a href="advanced-analysis.html#cb57-6" tabindex="-1"></a>models <span class="ot">&lt;-</span> <span class="fu">lapply</span>(mi_datasets, <span class="cf">function</span>(d) {</span>
+<span id="cb57-7"><a href="advanced-analysis.html#cb57-7" tabindex="-1"></a>  <span class="fu">coxph</span>(<span class="fu">Surv</span>(time, status) <span class="sc">~</span> treatment <span class="sc">+</span> age <span class="sc">+</span> sex, <span class="at">data =</span> d)</span>
+<span id="cb57-8"><a href="advanced-analysis.html#cb57-8" tabindex="-1"></a>})</span>
+<span id="cb57-9"><a href="advanced-analysis.html#cb57-9" tabindex="-1"></a></span>
+<span id="cb57-10"><a href="advanced-analysis.html#cb57-10" tabindex="-1"></a>pooled <span class="ot">&lt;-</span> <span class="fu">pool_mi_models</span>(models, <span class="at">model_type =</span> <span class="st">&quot;cox&quot;</span>)</span>
+<span id="cb57-11"><a href="advanced-analysis.html#cb57-11" tabindex="-1"></a><span class="fu">summary</span>(pooled)</span>
+<span id="cb57-12"><a href="advanced-analysis.html#cb57-12" tabindex="-1"></a><span class="co">#&gt; Multiple Imputation Results (Rubin&#39;s Rules)</span></span>
+<span id="cb57-13"><a href="advanced-analysis.html#cb57-13" tabindex="-1"></a><span class="co">#&gt; ============================================</span></span>
+<span id="cb57-14"><a href="advanced-analysis.html#cb57-14" tabindex="-1"></a><span class="co">#&gt; Number of imputations: 20</span></span>
+<span id="cb57-15"><a href="advanced-analysis.html#cb57-15" tabindex="-1"></a><span class="co">#&gt; Model type: cox</span></span>
+<span id="cb57-16"><a href="advanced-analysis.html#cb57-16" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb57-17"><a href="advanced-analysis.html#cb57-17" tabindex="-1"></a><span class="co">#&gt;   Term          HR     Std.Err   95% CI            p-value   FMI</span></span>
+<span id="cb57-18"><a href="advanced-analysis.html#cb57-18" tabindex="-1"></a><span class="co">#&gt;   treatment     1.456  0.156     [1.072, 1.978]    0.019     7.8%</span></span>
+<span id="cb57-19"><a href="advanced-analysis.html#cb57-19" tabindex="-1"></a><span class="co">#&gt;   age           1.023  0.008     [1.007, 1.039]    0.004     4.5%</span></span>
+<span id="cb57-20"><a href="advanced-analysis.html#cb57-20" tabindex="-1"></a><span class="co">#&gt;   sex           0.856  0.112     [0.687, 1.067]    0.168     5.2%</span></span></code></pre></div>
+</div>
+<div id="one-step-fitting-and-pooling" class="section level3 hasAnchor" number="9.5.2">
+<h3><span class="header-section-number">9.5.2</span> One-Step Fitting and Pooling<a href="advanced-analysis.html#one-step-fitting-and-pooling" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb58"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb58-1"><a href="advanced-analysis.html#cb58-1" tabindex="-1"></a><span class="co"># Method 2: Fit and pool in one call</span></span>
+<span id="cb58-2"><a href="advanced-analysis.html#cb58-2" tabindex="-1"></a>pooled <span class="ot">&lt;-</span> <span class="fu">pool_mi_models</span>(</span>
+<span id="cb58-3"><a href="advanced-analysis.html#cb58-3" tabindex="-1"></a>  <span class="at">datasets =</span> mi_datasets,</span>
+<span id="cb58-4"><a href="advanced-analysis.html#cb58-4" tabindex="-1"></a>  <span class="at">formula =</span> <span class="fu">Surv</span>(time, status) <span class="sc">~</span> treatment <span class="sc">+</span> age <span class="sc">+</span> sex <span class="sc">+</span> bmi,</span>
+<span id="cb58-5"><a href="advanced-analysis.html#cb58-5" tabindex="-1"></a>  <span class="at">model_type =</span> <span class="st">&quot;cox&quot;</span></span>
+<span id="cb58-6"><a href="advanced-analysis.html#cb58-6" tabindex="-1"></a>)</span>
+<span id="cb58-7"><a href="advanced-analysis.html#cb58-7" tabindex="-1"></a></span>
+<span id="cb58-8"><a href="advanced-analysis.html#cb58-8" tabindex="-1"></a><span class="co"># Logistic regression example</span></span>
+<span id="cb58-9"><a href="advanced-analysis.html#cb58-9" tabindex="-1"></a>pooled_logit <span class="ot">&lt;-</span> <span class="fu">pool_mi_models</span>(</span>
+<span id="cb58-10"><a href="advanced-analysis.html#cb58-10" tabindex="-1"></a>  <span class="at">datasets =</span> mi_datasets,</span>
+<span id="cb58-11"><a href="advanced-analysis.html#cb58-11" tabindex="-1"></a>  <span class="at">formula =</span> diabetes <span class="sc">~</span> treatment <span class="sc">+</span> age <span class="sc">+</span> sex <span class="sc">+</span> bmi,</span>
+<span id="cb58-12"><a href="advanced-analysis.html#cb58-12" tabindex="-1"></a>  <span class="at">model_type =</span> <span class="st">&quot;logistic&quot;</span>,</span>
+<span id="cb58-13"><a href="advanced-analysis.html#cb58-13" tabindex="-1"></a>  <span class="at">exponentiate =</span> <span class="cn">TRUE</span>  <span class="co"># Output OR</span></span>
+<span id="cb58-14"><a href="advanced-analysis.html#cb58-14" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+<div id="supported-model-types" class="section level3 hasAnchor" number="9.5.3">
+<h3><span class="header-section-number">9.5.3</span> Supported Model Types<a href="advanced-analysis.html#supported-model-types" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<table>
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>Function</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>"lm"</code></td>
+<td><code>lm()</code></td>
+<td>Beta coefficients</td>
+</tr>
+<tr class="even">
+<td><code>"logistic"</code></td>
+<td><code>glm(family=binomial)</code></td>
+<td>Odds Ratio</td>
+</tr>
+<tr class="odd">
+<td><code>"poisson"</code></td>
+<td><code>glm(family=poisson)</code></td>
+<td>Rate Ratio</td>
+</tr>
+<tr class="even">
+<td><code>"cox"</code></td>
+<td><code>coxph()</code></td>
+<td>Hazard Ratio</td>
+</tr>
+<tr class="odd">
+<td><code>"negbin"</code></td>
+<td><code>glm.nb()</code></td>
+<td>Rate Ratio</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="custom-estimates-pooling" class="section level3 hasAnchor" number="9.5.4">
+<h3><span class="header-section-number">9.5.4</span> Custom Estimates Pooling<a href="advanced-analysis.html#custom-estimates-pooling" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb59"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb59-1"><a href="advanced-analysis.html#cb59-1" tabindex="-1"></a><span class="co"># Pool any custom estimates (not just regression)</span></span>
+<span id="cb59-2"><a href="advanced-analysis.html#cb59-2" tabindex="-1"></a>mean_diffs <span class="ot">&lt;-</span> <span class="fu">lapply</span>(mi_datasets, <span class="cf">function</span>(d) {</span>
+<span id="cb59-3"><a href="advanced-analysis.html#cb59-3" tabindex="-1"></a>  <span class="fu">mean</span>(d<span class="sc">$</span>outcome[d<span class="sc">$</span>treatment <span class="sc">==</span> <span class="dv">1</span>]) <span class="sc">-</span> <span class="fu">mean</span>(d<span class="sc">$</span>outcome[d<span class="sc">$</span>treatment <span class="sc">==</span> <span class="dv">0</span>])</span>
+<span id="cb59-4"><a href="advanced-analysis.html#cb59-4" tabindex="-1"></a>})</span>
+<span id="cb59-5"><a href="advanced-analysis.html#cb59-5" tabindex="-1"></a></span>
+<span id="cb59-6"><a href="advanced-analysis.html#cb59-6" tabindex="-1"></a><span class="co"># Estimate variances</span></span>
+<span id="cb59-7"><a href="advanced-analysis.html#cb59-7" tabindex="-1"></a>vars <span class="ot">&lt;-</span> <span class="fu">lapply</span>(mi_datasets, <span class="cf">function</span>(d) {</span>
+<span id="cb59-8"><a href="advanced-analysis.html#cb59-8" tabindex="-1"></a>  n1 <span class="ot">&lt;-</span> <span class="fu">sum</span>(d<span class="sc">$</span>treatment <span class="sc">==</span> <span class="dv">1</span>)</span>
+<span id="cb59-9"><a href="advanced-analysis.html#cb59-9" tabindex="-1"></a>  n0 <span class="ot">&lt;-</span> <span class="fu">sum</span>(d<span class="sc">$</span>treatment <span class="sc">==</span> <span class="dv">0</span>)</span>
+<span id="cb59-10"><a href="advanced-analysis.html#cb59-10" tabindex="-1"></a>  <span class="fu">var</span>(d<span class="sc">$</span>outcome[d<span class="sc">$</span>treatment <span class="sc">==</span> <span class="dv">1</span>])<span class="sc">/</span>n1 <span class="sc">+</span> <span class="fu">var</span>(d<span class="sc">$</span>outcome[d<span class="sc">$</span>treatment <span class="sc">==</span> <span class="dv">0</span>])<span class="sc">/</span>n0</span>
+<span id="cb59-11"><a href="advanced-analysis.html#cb59-11" tabindex="-1"></a>})</span>
+<span id="cb59-12"><a href="advanced-analysis.html#cb59-12" tabindex="-1"></a></span>
+<span id="cb59-13"><a href="advanced-analysis.html#cb59-13" tabindex="-1"></a>pooled_diff <span class="ot">&lt;-</span> <span class="fu">pool_custom_estimates</span>(</span>
+<span id="cb59-14"><a href="advanced-analysis.html#cb59-14" tabindex="-1"></a>  <span class="at">estimates =</span> mean_diffs,</span>
+<span id="cb59-15"><a href="advanced-analysis.html#cb59-15" tabindex="-1"></a>  <span class="at">variances =</span> <span class="fu">lapply</span>(vars, <span class="cf">function</span>(v) <span class="fu">matrix</span>(v)),</span>
+<span id="cb59-16"><a href="advanced-analysis.html#cb59-16" tabindex="-1"></a>  <span class="at">labels =</span> <span class="st">&quot;Mean Difference&quot;</span></span>
+<span id="cb59-17"><a href="advanced-analysis.html#cb59-17" tabindex="-1"></a>)</span>
+<span id="cb59-18"><a href="advanced-analysis.html#cb59-18" tabindex="-1"></a><span class="fu">summary</span>(pooled_diff)</span></code></pre></div>
+</div>
+<div id="visualization-1" class="section level3 hasAnchor" number="9.5.5">
+<h3><span class="header-section-number">9.5.5</span> Visualization<a href="advanced-analysis.html#visualization-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb60"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb60-1"><a href="advanced-analysis.html#cb60-1" tabindex="-1"></a><span class="co"># Forest plot of pooled estimates</span></span>
+<span id="cb60-2"><a href="advanced-analysis.html#cb60-2" tabindex="-1"></a><span class="fu">plot_mi_pooled</span>(pooled, <span class="at">exponentiate =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb60-3"><a href="advanced-analysis.html#cb60-3" tabindex="-1"></a></span>
+<span id="cb60-4"><a href="advanced-analysis.html#cb60-4" tabindex="-1"></a><span class="co"># Diagnostic plot: Fraction of Missing Information</span></span>
+<span id="cb60-5"><a href="advanced-analysis.html#cb60-5" tabindex="-1"></a><span class="fu">plot_mi_diagnostics</span>(pooled, <span class="at">type =</span> <span class="st">&quot;fmi&quot;</span>)</span>
+<span id="cb60-6"><a href="advanced-analysis.html#cb60-6" tabindex="-1"></a></span>
+<span id="cb60-7"><a href="advanced-analysis.html#cb60-7" tabindex="-1"></a><span class="co"># Variance ratio diagnostic</span></span>
+<span id="cb60-8"><a href="advanced-analysis.html#cb60-8" tabindex="-1"></a><span class="fu">plot_mi_diagnostics</span>(pooled, <span class="at">type =</span> <span class="st">&quot;variance_ratio&quot;</span>)</span></code></pre></div>
+</div>
+<div id="understanding-fmi" class="section level3 hasAnchor" number="9.5.6">
+<h3><span class="header-section-number">9.5.6</span> Understanding FMI<a href="advanced-analysis.html#understanding-fmi" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The <strong>Fraction of Missing Information (FMI)</strong> indicates how much the missing data affects each estimate:</p>
+<table>
+<thead>
+<tr class="header">
+<th>FMI Level</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>&lt; 10%</td>
+<td>Low impact from missing data</td>
+</tr>
+<tr class="even">
+<td>10-30%</td>
+<td>Moderate impact</td>
+</tr>
+<tr class="odd">
+<td>30-50%</td>
+<td>High impact</td>
+</tr>
+<tr class="even">
+<td>&gt; 50%</td>
+<td>Very high impact; consider more imputations</td>
+</tr>
+</tbody>
+</table>
+<hr />
+</div>
+</div>
+<div id="visualization" class="section level2 hasAnchor" number="9.6">
+<h2><span class="header-section-number">9.6</span> Visualization Functions<a href="advanced-analysis.html#visualization" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div id="forest-plot" class="section level3 hasAnchor" number="9.6.1">
+<h3><span class="header-section-number">9.6.1</span> Forest Plot<a href="advanced-analysis.html#forest-plot" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb61"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb61-1"><a href="advanced-analysis.html#cb61-1" tabindex="-1"></a><span class="co"># From subgroup analysis</span></span>
+<span id="cb61-2"><a href="advanced-analysis.html#cb61-2" tabindex="-1"></a><span class="fu">plot_forest</span>(</span>
+<span id="cb61-3"><a href="advanced-analysis.html#cb61-3" tabindex="-1"></a>  subgroup_results,</span>
+<span id="cb61-4"><a href="advanced-analysis.html#cb61-4" tabindex="-1"></a>  <span class="at">estimate_col =</span> <span class="st">&quot;HR&quot;</span>,</span>
+<span id="cb61-5"><a href="advanced-analysis.html#cb61-5" tabindex="-1"></a>  <span class="at">lower_col =</span> <span class="st">&quot;lower95&quot;</span>,</span>
+<span id="cb61-6"><a href="advanced-analysis.html#cb61-6" tabindex="-1"></a>  <span class="at">upper_col =</span> <span class="st">&quot;upper95&quot;</span>,</span>
+<span id="cb61-7"><a href="advanced-analysis.html#cb61-7" tabindex="-1"></a>  <span class="at">null_value =</span> <span class="dv">1</span>,</span>
+<span id="cb61-8"><a href="advanced-analysis.html#cb61-8" tabindex="-1"></a>  <span class="at">log_scale =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb61-9"><a href="advanced-analysis.html#cb61-9" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">&quot;Subgroup Analysis Forest Plot&quot;</span></span>
+<span id="cb61-10"><a href="advanced-analysis.html#cb61-10" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+<div id="kaplan-meier-curves" class="section level3 hasAnchor" number="9.6.2">
+<h3><span class="header-section-number">9.6.2</span> Kaplan-Meier Curves<a href="advanced-analysis.html#kaplan-meier-curves" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb62"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb62-1"><a href="advanced-analysis.html#cb62-1" tabindex="-1"></a><span class="fu">plot_km_curve</span>(</span>
+<span id="cb62-2"><a href="advanced-analysis.html#cb62-2" tabindex="-1"></a>  <span class="at">data =</span> dt,</span>
+<span id="cb62-3"><a href="advanced-analysis.html#cb62-3" tabindex="-1"></a>  <span class="at">time =</span> <span class="st">&quot;surv_time&quot;</span>,</span>
+<span id="cb62-4"><a href="advanced-analysis.html#cb62-4" tabindex="-1"></a>  <span class="at">status =</span> <span class="st">&quot;status&quot;</span>,</span>
+<span id="cb62-5"><a href="advanced-analysis.html#cb62-5" tabindex="-1"></a>  <span class="at">group =</span> <span class="st">&quot;treatment&quot;</span>,</span>
+<span id="cb62-6"><a href="advanced-analysis.html#cb62-6" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">&quot;Survival by Treatment Group&quot;</span>,</span>
+<span id="cb62-7"><a href="advanced-analysis.html#cb62-7" tabindex="-1"></a>  <span class="at">risk_table =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb62-8"><a href="advanced-analysis.html#cb62-8" tabindex="-1"></a>  <span class="at">conf_int =</span> <span class="cn">TRUE</span></span>
+<span id="cb62-9"><a href="advanced-analysis.html#cb62-9" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+<div id="propensity-score-plots" class="section level3 hasAnchor" number="9.6.3">
+<h3><span class="header-section-number">9.6.3</span> Propensity Score Plots<a href="advanced-analysis.html#propensity-score-plots" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb63"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb63-1"><a href="advanced-analysis.html#cb63-1" tabindex="-1"></a><span class="co"># PS distribution</span></span>
+<span id="cb63-2"><a href="advanced-analysis.html#cb63-2" tabindex="-1"></a><span class="fu">plot_ps_distribution</span>(ps_result, <span class="at">type =</span> <span class="st">&quot;density&quot;</span>)</span>
+<span id="cb63-3"><a href="advanced-analysis.html#cb63-3" tabindex="-1"></a></span>
+<span id="cb63-4"><a href="advanced-analysis.html#cb63-4" tabindex="-1"></a><span class="co"># Balance plot</span></span>
+<span id="cb63-5"><a href="advanced-analysis.html#cb63-5" tabindex="-1"></a><span class="fu">plot_balance</span>(balance_result, <span class="at">title =</span> <span class="st">&quot;SMD Before/After Matching&quot;</span>)</span>
+<span id="cb63-6"><a href="advanced-analysis.html#cb63-6" tabindex="-1"></a></span>
+<span id="cb63-7"><a href="advanced-analysis.html#cb63-7" tabindex="-1"></a><span class="co"># Calibration plot</span></span>
+<span id="cb63-8"><a href="advanced-analysis.html#cb63-8" tabindex="-1"></a><span class="fu">plot_calibration</span>(<span class="at">predicted =</span> dt<span class="sc">$</span>ps, <span class="at">observed =</span> dt<span class="sc">$</span>treatment)</span></code></pre></div>
+<hr />
+</div>
+</div>
+<div id="workflow" class="section level2 hasAnchor" number="9.7">
+<h2><span class="header-section-number">9.7</span> Integration Example: Complete Workflow<a href="advanced-analysis.html#workflow" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Here’s a complete example combining multiple modules:</p>
+<div class="sourceCode" id="cb64"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb64-1"><a href="advanced-analysis.html#cb64-1" tabindex="-1"></a><span class="fu">library</span>(UKBAnalytica)</span>
+<span id="cb64-2"><a href="advanced-analysis.html#cb64-2" tabindex="-1"></a><span class="fu">library</span>(mice)</span>
+<span id="cb64-3"><a href="advanced-analysis.html#cb64-3" tabindex="-1"></a><span class="fu">library</span>(survival)</span>
+<span id="cb64-4"><a href="advanced-analysis.html#cb64-4" tabindex="-1"></a></span>
+<span id="cb64-5"><a href="advanced-analysis.html#cb64-5" tabindex="-1"></a><span class="co"># 1. Multiple imputation (using mice)</span></span>
+<span id="cb64-6"><a href="advanced-analysis.html#cb64-6" tabindex="-1"></a>mi_data <span class="ot">&lt;-</span> <span class="fu">mice</span>(original_data, <span class="at">m =</span> <span class="dv">20</span>, <span class="at">method =</span> <span class="st">&quot;pmm&quot;</span>)</span>
+<span id="cb64-7"><a href="advanced-analysis.html#cb64-7" tabindex="-1"></a>mi_datasets <span class="ot">&lt;-</span> <span class="fu">complete</span>(mi_data, <span class="at">action =</span> <span class="st">&quot;all&quot;</span>)</span>
+<span id="cb64-8"><a href="advanced-analysis.html#cb64-8" tabindex="-1"></a></span>
+<span id="cb64-9"><a href="advanced-analysis.html#cb64-9" tabindex="-1"></a><span class="co"># 2. Propensity score weighting in each imputation</span></span>
+<span id="cb64-10"><a href="advanced-analysis.html#cb64-10" tabindex="-1"></a>weighted_models <span class="ot">&lt;-</span> <span class="fu">lapply</span>(mi_datasets, <span class="cf">function</span>(d) {</span>
+<span id="cb64-11"><a href="advanced-analysis.html#cb64-11" tabindex="-1"></a>  <span class="co"># Estimate PS</span></span>
+<span id="cb64-12"><a href="advanced-analysis.html#cb64-12" tabindex="-1"></a>  ps <span class="ot">&lt;-</span> <span class="fu">estimate_propensity_score</span>(d, <span class="st">&quot;treatment&quot;</span>, </span>
+<span id="cb64-13"><a href="advanced-analysis.html#cb64-13" tabindex="-1"></a>                                   <span class="fu">c</span>(<span class="st">&quot;age&quot;</span>, <span class="st">&quot;sex&quot;</span>, <span class="st">&quot;bmi&quot;</span>, <span class="st">&quot;smoking&quot;</span>))<span class="sc">$</span>ps</span>
+<span id="cb64-14"><a href="advanced-analysis.html#cb64-14" tabindex="-1"></a>  <span class="co"># Calculate weights</span></span>
+<span id="cb64-15"><a href="advanced-analysis.html#cb64-15" tabindex="-1"></a>  d<span class="sc">$</span>weight <span class="ot">&lt;-</span> <span class="fu">calculate_weights</span>(ps, d<span class="sc">$</span>treatment, <span class="st">&quot;ate&quot;</span>)</span>
+<span id="cb64-16"><a href="advanced-analysis.html#cb64-16" tabindex="-1"></a>  </span>
+<span id="cb64-17"><a href="advanced-analysis.html#cb64-17" tabindex="-1"></a>  <span class="co"># Fit weighted Cox model</span></span>
+<span id="cb64-18"><a href="advanced-analysis.html#cb64-18" tabindex="-1"></a>  <span class="fu">coxph</span>(<span class="fu">Surv</span>(time, status) <span class="sc">~</span> treatment, <span class="at">data =</span> d, <span class="at">weights =</span> weight)</span>
+<span id="cb64-19"><a href="advanced-analysis.html#cb64-19" tabindex="-1"></a>})</span>
+<span id="cb64-20"><a href="advanced-analysis.html#cb64-20" tabindex="-1"></a></span>
+<span id="cb64-21"><a href="advanced-analysis.html#cb64-21" tabindex="-1"></a><span class="co"># 3. Pool results</span></span>
+<span id="cb64-22"><a href="advanced-analysis.html#cb64-22" tabindex="-1"></a>pooled <span class="ot">&lt;-</span> <span class="fu">pool_mi_models</span>(weighted_models, <span class="at">model_type =</span> <span class="st">&quot;cox&quot;</span>)</span>
+<span id="cb64-23"><a href="advanced-analysis.html#cb64-23" tabindex="-1"></a><span class="fu">summary</span>(pooled)</span>
+<span id="cb64-24"><a href="advanced-analysis.html#cb64-24" tabindex="-1"></a></span>
+<span id="cb64-25"><a href="advanced-analysis.html#cb64-25" tabindex="-1"></a><span class="co"># 4. Subgroup analysis (on complete-case for simplicity)</span></span>
+<span id="cb64-26"><a href="advanced-analysis.html#cb64-26" tabindex="-1"></a>subgroup_results <span class="ot">&lt;-</span> <span class="fu">run_multi_subgroup</span>(</span>
+<span id="cb64-27"><a href="advanced-analysis.html#cb64-27" tabindex="-1"></a>  <span class="at">data =</span> original_data[<span class="fu">complete.cases</span>(original_data), ],</span>
+<span id="cb64-28"><a href="advanced-analysis.html#cb64-28" tabindex="-1"></a>  <span class="at">exposure =</span> <span class="st">&quot;treatment&quot;</span>,</span>
+<span id="cb64-29"><a href="advanced-analysis.html#cb64-29" tabindex="-1"></a>  <span class="at">outcome =</span> <span class="st">&quot;event&quot;</span>,</span>
+<span id="cb64-30"><a href="advanced-analysis.html#cb64-30" tabindex="-1"></a>  <span class="at">subgroup_vars =</span> <span class="fu">c</span>(<span class="st">&quot;age_group&quot;</span>, <span class="st">&quot;sex&quot;</span>, <span class="st">&quot;diabetes&quot;</span>),</span>
+<span id="cb64-31"><a href="advanced-analysis.html#cb64-31" tabindex="-1"></a>  <span class="at">model_type =</span> <span class="st">&quot;cox&quot;</span>,</span>
+<span id="cb64-32"><a href="advanced-analysis.html#cb64-32" tabindex="-1"></a>  <span class="at">endpoint =</span> <span class="fu">c</span>(<span class="st">&quot;time&quot;</span>, <span class="st">&quot;status&quot;</span>)</span>
+<span id="cb64-33"><a href="advanced-analysis.html#cb64-33" tabindex="-1"></a>)</span>
+<span id="cb64-34"><a href="advanced-analysis.html#cb64-34" tabindex="-1"></a></span>
+<span id="cb64-35"><a href="advanced-analysis.html#cb64-35" tabindex="-1"></a><span class="co"># 5. Visualize</span></span>
+<span id="cb64-36"><a href="advanced-analysis.html#cb64-36" tabindex="-1"></a><span class="fu">plot_forest</span>(subgroup_results)</span>
+<span id="cb64-37"><a href="advanced-analysis.html#cb64-37" tabindex="-1"></a><span class="fu">plot_mi_pooled</span>(pooled)</span></code></pre></div>
+<hr />
+</div>
+<div id="summary-1" class="section level2 hasAnchor" number="9.8">
+<h2><span class="header-section-number">9.8</span> Summary<a href="advanced-analysis.html#summary-1" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>This chapter covered five advanced analysis modules:</p>
+<ol style="list-style-type: decimal">
+<li><strong>Subgroup Analysis</strong>: <code>run_subgroup_analysis()</code>, <code>run_multi_subgroup()</code></li>
+<li><strong>Propensity Score</strong>: <code>estimate_propensity_score()</code>, <code>match_propensity()</code>, <code>calculate_weights()</code></li>
+<li><strong>Mediation Analysis</strong>: <code>run_mediation()</code>, <code>run_multi_mediator()</code></li>
+<li><strong>MI Pooling</strong>: <code>pool_mi_models()</code>, <code>pool_custom_estimates()</code></li>
+<li><strong>Machine Learning</strong>: <code>ukb_ml_model()</code>, <code>ukb_shap()</code>, <code>ukb_ml_survival()</code></li>
+</ol>
+<p>Each module includes dedicated visualization functions and integrates with the standard UKBAnalytica workflow.</p>
+<hr />
+</div>
+<div id="machine-learning" class="section level2 hasAnchor" number="9.9">
+<h2><span class="header-section-number">9.9</span> Machine Learning Module<a href="advanced-analysis.html#machine-learning" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>The ML module provides a unified interface for training, evaluating, and interpreting machine learning models for UK Biobank data analysis.</p>
+<div id="supported-models" class="section level3 hasAnchor" number="9.9.1">
+<h3><span class="header-section-number">9.9.1</span> Supported Models<a href="advanced-analysis.html#supported-models" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<table>
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>Type</th>
+<th>Use Case</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>rf</code></td>
+<td>Random Forest</td>
+<td>General classification/regression</td>
+</tr>
+<tr class="even">
+<td><code>xgboost</code></td>
+<td>Gradient Boosting</td>
+<td>High-performance prediction</td>
+</tr>
+<tr class="odd">
+<td><code>glmnet</code></td>
+<td>Elastic Net</td>
+<td>Feature selection, regularization</td>
+</tr>
+<tr class="even">
+<td><code>svm</code></td>
+<td>Support Vector Machine</td>
+<td>Complex boundaries</td>
+</tr>
+<tr class="odd">
+<td><code>nnet</code></td>
+<td>Neural Network</td>
+<td>Non-linear patterns</td>
+</tr>
+<tr class="even">
+<td><code>logistic</code></td>
+<td>Logistic/Linear</td>
+<td>Baseline comparison</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="basic-usage-5" class="section level3 hasAnchor" number="9.9.2">
+<h3><span class="header-section-number">9.9.2</span> Basic Usage<a href="advanced-analysis.html#basic-usage-5" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb65"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb65-1"><a href="advanced-analysis.html#cb65-1" tabindex="-1"></a><span class="fu">library</span>(UKBAnalytica)</span>
+<span id="cb65-2"><a href="advanced-analysis.html#cb65-2" tabindex="-1"></a></span>
+<span id="cb65-3"><a href="advanced-analysis.html#cb65-3" tabindex="-1"></a><span class="co"># Train a Random Forest classifier</span></span>
+<span id="cb65-4"><a href="advanced-analysis.html#cb65-4" tabindex="-1"></a>ml_rf <span class="ot">&lt;-</span> <span class="fu">ukb_ml_model</span>(</span>
+<span id="cb65-5"><a href="advanced-analysis.html#cb65-5" tabindex="-1"></a>  diabetes <span class="sc">~</span> age <span class="sc">+</span> bmi <span class="sc">+</span> sbp <span class="sc">+</span> smoking <span class="sc">+</span> alcohol,</span>
+<span id="cb65-6"><a href="advanced-analysis.html#cb65-6" tabindex="-1"></a>  <span class="at">data =</span> ukb_data,</span>
+<span id="cb65-7"><a href="advanced-analysis.html#cb65-7" tabindex="-1"></a>  <span class="at">model =</span> <span class="st">&quot;rf&quot;</span>,</span>
+<span id="cb65-8"><a href="advanced-analysis.html#cb65-8" tabindex="-1"></a>  <span class="at">task =</span> <span class="st">&quot;classification&quot;</span>,</span>
+<span id="cb65-9"><a href="advanced-analysis.html#cb65-9" tabindex="-1"></a>  <span class="at">split_ratio =</span> <span class="fl">0.8</span>,</span>
+<span id="cb65-10"><a href="advanced-analysis.html#cb65-10" tabindex="-1"></a>  <span class="at">seed =</span> <span class="dv">42</span></span>
+<span id="cb65-11"><a href="advanced-analysis.html#cb65-11" tabindex="-1"></a>)</span>
+<span id="cb65-12"><a href="advanced-analysis.html#cb65-12" tabindex="-1"></a></span>
+<span id="cb65-13"><a href="advanced-analysis.html#cb65-13" tabindex="-1"></a><span class="co"># View results</span></span>
+<span id="cb65-14"><a href="advanced-analysis.html#cb65-14" tabindex="-1"></a><span class="fu">print</span>(ml_rf)</span>
+<span id="cb65-15"><a href="advanced-analysis.html#cb65-15" tabindex="-1"></a><span class="co">#&gt; UKB Machine Learning Model</span></span>
+<span id="cb65-16"><a href="advanced-analysis.html#cb65-16" tabindex="-1"></a><span class="co">#&gt; ==========================</span></span>
+<span id="cb65-17"><a href="advanced-analysis.html#cb65-17" tabindex="-1"></a><span class="co">#&gt; Model: Random Forest</span></span>
+<span id="cb65-18"><a href="advanced-analysis.html#cb65-18" tabindex="-1"></a><span class="co">#&gt; Task: classification</span></span>
+<span id="cb65-19"><a href="advanced-analysis.html#cb65-19" tabindex="-1"></a><span class="co">#&gt; Test AUC: 0.782</span></span>
+<span id="cb65-20"><a href="advanced-analysis.html#cb65-20" tabindex="-1"></a></span>
+<span id="cb65-21"><a href="advanced-analysis.html#cb65-21" tabindex="-1"></a><span class="co"># Variable importance</span></span>
+<span id="cb65-22"><a href="advanced-analysis.html#cb65-22" tabindex="-1"></a><span class="fu">ukb_ml_importance</span>(ml_rf)</span></code></pre></div>
+</div>
+<div id="model-evaluation" class="section level3 hasAnchor" number="9.9.3">
+<h3><span class="header-section-number">9.9.3</span> Model Evaluation<a href="advanced-analysis.html#model-evaluation" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb66"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb66-1"><a href="advanced-analysis.html#cb66-1" tabindex="-1"></a><span class="co"># Detailed metrics with confidence intervals</span></span>
+<span id="cb66-2"><a href="advanced-analysis.html#cb66-2" tabindex="-1"></a>metrics <span class="ot">&lt;-</span> <span class="fu">ukb_ml_metrics</span>(ml_rf, <span class="at">ci =</span> <span class="cn">TRUE</span>, <span class="at">ci_method =</span> <span class="st">&quot;delong&quot;</span>)</span>
+<span id="cb66-3"><a href="advanced-analysis.html#cb66-3" tabindex="-1"></a></span>
+<span id="cb66-4"><a href="advanced-analysis.html#cb66-4" tabindex="-1"></a><span class="co"># ROC curve</span></span>
+<span id="cb66-5"><a href="advanced-analysis.html#cb66-5" tabindex="-1"></a>roc_result <span class="ot">&lt;-</span> <span class="fu">ukb_ml_roc</span>(ml_rf)</span>
+<span id="cb66-6"><a href="advanced-analysis.html#cb66-6" tabindex="-1"></a><span class="fu">print</span>(roc_result)</span>
+<span id="cb66-7"><a href="advanced-analysis.html#cb66-7" tabindex="-1"></a></span>
+<span id="cb66-8"><a href="advanced-analysis.html#cb66-8" tabindex="-1"></a><span class="co"># Calibration curve</span></span>
+<span id="cb66-9"><a href="advanced-analysis.html#cb66-9" tabindex="-1"></a>cal_result <span class="ot">&lt;-</span> <span class="fu">ukb_ml_calibration</span>(ml_rf)</span>
+<span id="cb66-10"><a href="advanced-analysis.html#cb66-10" tabindex="-1"></a><span class="fu">plot</span>(cal_result)</span>
+<span id="cb66-11"><a href="advanced-analysis.html#cb66-11" tabindex="-1"></a></span>
+<span id="cb66-12"><a href="advanced-analysis.html#cb66-12" tabindex="-1"></a><span class="co"># Confusion matrix</span></span>
+<span id="cb66-13"><a href="advanced-analysis.html#cb66-13" tabindex="-1"></a>cm_result <span class="ot">&lt;-</span> <span class="fu">ukb_ml_confusion</span>(ml_rf, <span class="at">threshold =</span> <span class="fl">0.5</span>)</span>
+<span id="cb66-14"><a href="advanced-analysis.html#cb66-14" tabindex="-1"></a><span class="fu">print</span>(cm_result)</span></code></pre></div>
+</div>
+<div id="cross-validation" class="section level3 hasAnchor" number="9.9.4">
+<h3><span class="header-section-number">9.9.4</span> Cross-Validation<a href="advanced-analysis.html#cross-validation" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb67"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb67-1"><a href="advanced-analysis.html#cb67-1" tabindex="-1"></a><span class="co"># 5-fold cross-validation</span></span>
+<span id="cb67-2"><a href="advanced-analysis.html#cb67-2" tabindex="-1"></a>cv_result <span class="ot">&lt;-</span> <span class="fu">ukb_ml_cv</span>(</span>
+<span id="cb67-3"><a href="advanced-analysis.html#cb67-3" tabindex="-1"></a>  diabetes <span class="sc">~</span> age <span class="sc">+</span> bmi <span class="sc">+</span> sbp <span class="sc">+</span> smoking,</span>
+<span id="cb67-4"><a href="advanced-analysis.html#cb67-4" tabindex="-1"></a>  <span class="at">data =</span> ukb_data,</span>
+<span id="cb67-5"><a href="advanced-analysis.html#cb67-5" tabindex="-1"></a>  <span class="at">model =</span> <span class="st">&quot;rf&quot;</span>,</span>
+<span id="cb67-6"><a href="advanced-analysis.html#cb67-6" tabindex="-1"></a>  <span class="at">task =</span> <span class="st">&quot;classification&quot;</span>,</span>
+<span id="cb67-7"><a href="advanced-analysis.html#cb67-7" tabindex="-1"></a>  <span class="at">folds =</span> <span class="dv">5</span>,</span>
+<span id="cb67-8"><a href="advanced-analysis.html#cb67-8" tabindex="-1"></a>  <span class="at">repeats =</span> <span class="dv">3</span>,</span>
+<span id="cb67-9"><a href="advanced-analysis.html#cb67-9" tabindex="-1"></a>  <span class="at">seed =</span> <span class="dv">42</span></span>
+<span id="cb67-10"><a href="advanced-analysis.html#cb67-10" tabindex="-1"></a>)</span>
+<span id="cb67-11"><a href="advanced-analysis.html#cb67-11" tabindex="-1"></a></span>
+<span id="cb67-12"><a href="advanced-analysis.html#cb67-12" tabindex="-1"></a><span class="fu">print</span>(cv_result)</span>
+<span id="cb67-13"><a href="advanced-analysis.html#cb67-13" tabindex="-1"></a><span class="co">#&gt; Metrics (Mean +/- SD):</span></span>
+<span id="cb67-14"><a href="advanced-analysis.html#cb67-14" tabindex="-1"></a><span class="co">#&gt;   auc: 0.781 +/- 0.023</span></span>
+<span id="cb67-15"><a href="advanced-analysis.html#cb67-15" tabindex="-1"></a><span class="co">#&gt;   accuracy: 0.742 +/- 0.018</span></span></code></pre></div>
+</div>
+<div id="model-comparison" class="section level3 hasAnchor" number="9.9.5">
+<h3><span class="header-section-number">9.9.5</span> Model Comparison<a href="advanced-analysis.html#model-comparison" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb68"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb68-1"><a href="advanced-analysis.html#cb68-1" tabindex="-1"></a><span class="co"># Train multiple models</span></span>
+<span id="cb68-2"><a href="advanced-analysis.html#cb68-2" tabindex="-1"></a>ml_rf <span class="ot">&lt;-</span> <span class="fu">ukb_ml_model</span>(outcome <span class="sc">~</span> ., data, <span class="at">model =</span> <span class="st">&quot;rf&quot;</span>)</span>
+<span id="cb68-3"><a href="advanced-analysis.html#cb68-3" tabindex="-1"></a>ml_xgb <span class="ot">&lt;-</span> <span class="fu">ukb_ml_model</span>(outcome <span class="sc">~</span> ., data, <span class="at">model =</span> <span class="st">&quot;xgboost&quot;</span>)</span>
+<span id="cb68-4"><a href="advanced-analysis.html#cb68-4" tabindex="-1"></a>ml_lasso <span class="ot">&lt;-</span> <span class="fu">ukb_ml_model</span>(outcome <span class="sc">~</span> ., data, <span class="at">model =</span> <span class="st">&quot;glmnet&quot;</span>)</span>
+<span id="cb68-5"><a href="advanced-analysis.html#cb68-5" tabindex="-1"></a></span>
+<span id="cb68-6"><a href="advanced-analysis.html#cb68-6" tabindex="-1"></a><span class="co"># Compare performance</span></span>
+<span id="cb68-7"><a href="advanced-analysis.html#cb68-7" tabindex="-1"></a>comparison <span class="ot">&lt;-</span> <span class="fu">ukb_ml_compare</span>(ml_rf, ml_xgb, ml_lasso)</span>
+<span id="cb68-8"><a href="advanced-analysis.html#cb68-8" tabindex="-1"></a><span class="fu">print</span>(comparison)</span>
+<span id="cb68-9"><a href="advanced-analysis.html#cb68-9" tabindex="-1"></a><span class="fu">plot</span>(comparison)</span></code></pre></div>
+</div>
+<div id="shap-interpretation" class="section level3 hasAnchor" number="9.9.6">
+<h3><span class="header-section-number">9.9.6</span> SHAP Interpretation<a href="advanced-analysis.html#shap-interpretation" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb69-1"><a href="advanced-analysis.html#cb69-1" tabindex="-1"></a><span class="co"># Requires: install.packages(&quot;fastshap&quot;)</span></span>
+<span id="cb69-2"><a href="advanced-analysis.html#cb69-2" tabindex="-1"></a></span>
+<span id="cb69-3"><a href="advanced-analysis.html#cb69-3" tabindex="-1"></a><span class="co"># Compute SHAP values</span></span>
+<span id="cb69-4"><a href="advanced-analysis.html#cb69-4" tabindex="-1"></a>shap <span class="ot">&lt;-</span> <span class="fu">ukb_shap</span>(ml_rf, <span class="at">sample_n =</span> <span class="dv">1000</span>, <span class="at">nsim =</span> <span class="dv">100</span>)</span>
+<span id="cb69-5"><a href="advanced-analysis.html#cb69-5" tabindex="-1"></a><span class="fu">print</span>(shap)</span>
+<span id="cb69-6"><a href="advanced-analysis.html#cb69-6" tabindex="-1"></a></span>
+<span id="cb69-7"><a href="advanced-analysis.html#cb69-7" tabindex="-1"></a><span class="co"># Summary plot (global importance)</span></span>
+<span id="cb69-8"><a href="advanced-analysis.html#cb69-8" tabindex="-1"></a><span class="fu">plot_shap_summary</span>(shap, <span class="at">type =</span> <span class="st">&quot;beeswarm&quot;</span>)</span>
+<span id="cb69-9"><a href="advanced-analysis.html#cb69-9" tabindex="-1"></a><span class="fu">plot_shap_summary</span>(shap, <span class="at">type =</span> <span class="st">&quot;bar&quot;</span>)</span>
+<span id="cb69-10"><a href="advanced-analysis.html#cb69-10" tabindex="-1"></a></span>
+<span id="cb69-11"><a href="advanced-analysis.html#cb69-11" tabindex="-1"></a><span class="co"># Dependence plot (single feature)</span></span>
+<span id="cb69-12"><a href="advanced-analysis.html#cb69-12" tabindex="-1"></a><span class="fu">plot_shap_dependence</span>(shap, <span class="at">feature =</span> <span class="st">&quot;age&quot;</span>, <span class="at">color_feature =</span> <span class="st">&quot;sex&quot;</span>)</span>
+<span id="cb69-13"><a href="advanced-analysis.html#cb69-13" tabindex="-1"></a></span>
+<span id="cb69-14"><a href="advanced-analysis.html#cb69-14" tabindex="-1"></a><span class="co"># Force plot (single observation)</span></span>
+<span id="cb69-15"><a href="advanced-analysis.html#cb69-15" tabindex="-1"></a><span class="fu">plot_shap_force</span>(shap, <span class="at">row_id =</span> <span class="dv">1</span>, <span class="at">max_features =</span> <span class="dv">10</span>)</span></code></pre></div>
+</div>
+<div id="survival-ml-models" class="section level3 hasAnchor" number="9.9.7">
+<h3><span class="header-section-number">9.9.7</span> Survival ML Models<a href="advanced-analysis.html#survival-ml-models" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb70"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb70-1"><a href="advanced-analysis.html#cb70-1" tabindex="-1"></a><span class="co"># Requires: install.packages(&quot;randomForestSRC&quot;)</span></span>
+<span id="cb70-2"><a href="advanced-analysis.html#cb70-2" tabindex="-1"></a></span>
+<span id="cb70-3"><a href="advanced-analysis.html#cb70-3" tabindex="-1"></a><span class="co"># Random Survival Forest</span></span>
+<span id="cb70-4"><a href="advanced-analysis.html#cb70-4" tabindex="-1"></a>surv_rf <span class="ot">&lt;-</span> <span class="fu">ukb_ml_survival</span>(</span>
+<span id="cb70-5"><a href="advanced-analysis.html#cb70-5" tabindex="-1"></a>  <span class="fu">Surv</span>(time, event) <span class="sc">~</span> age <span class="sc">+</span> sex <span class="sc">+</span> bmi <span class="sc">+</span> smoking <span class="sc">+</span> diabetes,</span>
+<span id="cb70-6"><a href="advanced-analysis.html#cb70-6" tabindex="-1"></a>  <span class="at">data =</span> ukb_data,</span>
+<span id="cb70-7"><a href="advanced-analysis.html#cb70-7" tabindex="-1"></a>  <span class="at">model =</span> <span class="st">&quot;rsf&quot;</span>,</span>
+<span id="cb70-8"><a href="advanced-analysis.html#cb70-8" tabindex="-1"></a>  <span class="at">params =</span> <span class="fu">list</span>(<span class="at">ntree =</span> <span class="dv">500</span>)</span>
+<span id="cb70-9"><a href="advanced-analysis.html#cb70-9" tabindex="-1"></a>)</span>
+<span id="cb70-10"><a href="advanced-analysis.html#cb70-10" tabindex="-1"></a></span>
+<span id="cb70-11"><a href="advanced-analysis.html#cb70-11" tabindex="-1"></a><span class="fu">print</span>(surv_rf)</span>
+<span id="cb70-12"><a href="advanced-analysis.html#cb70-12" tabindex="-1"></a><span class="co">#&gt; Test C-index: 0.752</span></span>
+<span id="cb70-13"><a href="advanced-analysis.html#cb70-13" tabindex="-1"></a></span>
+<span id="cb70-14"><a href="advanced-analysis.html#cb70-14" tabindex="-1"></a><span class="co"># Predict survival probabilities</span></span>
+<span id="cb70-15"><a href="advanced-analysis.html#cb70-15" tabindex="-1"></a>pred <span class="ot">&lt;-</span> <span class="fu">ukb_ml_survival_predict</span>(surv_rf, <span class="at">times =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">5</span>, <span class="dv">10</span>))</span>
+<span id="cb70-16"><a href="advanced-analysis.html#cb70-16" tabindex="-1"></a></span>
+<span id="cb70-17"><a href="advanced-analysis.html#cb70-17" tabindex="-1"></a><span class="co"># Variable importance</span></span>
+<span id="cb70-18"><a href="advanced-analysis.html#cb70-18" tabindex="-1"></a><span class="fu">ukb_ml_survival_importance</span>(surv_rf)</span>
+<span id="cb70-19"><a href="advanced-analysis.html#cb70-19" tabindex="-1"></a></span>
+<span id="cb70-20"><a href="advanced-analysis.html#cb70-20" tabindex="-1"></a><span class="co"># SHAP for survival model</span></span>
+<span id="cb70-21"><a href="advanced-analysis.html#cb70-21" tabindex="-1"></a>surv_shap <span class="ot">&lt;-</span> <span class="fu">ukb_ml_survival_shap</span>(surv_rf, <span class="at">time_point =</span> <span class="dv">5</span>, <span class="at">sample_n =</span> <span class="dv">500</span>)</span>
+<span id="cb70-22"><a href="advanced-analysis.html#cb70-22" tabindex="-1"></a><span class="fu">plot_shap_summary</span>(surv_shap)</span></code></pre></div>
+</div>
+<div id="integration-with-other-modules" class="section level3 hasAnchor" number="9.9.8">
+<h3><span class="header-section-number">9.9.8</span> Integration with Other Modules<a href="advanced-analysis.html#integration-with-other-modules" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb71"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb71-1"><a href="advanced-analysis.html#cb71-1" tabindex="-1"></a><span class="co"># Use ML for propensity score estimation</span></span>
+<span id="cb71-2"><a href="advanced-analysis.html#cb71-2" tabindex="-1"></a>ps_ml <span class="ot">&lt;-</span> <span class="fu">ukb_ml_model</span>(</span>
+<span id="cb71-3"><a href="advanced-analysis.html#cb71-3" tabindex="-1"></a>  treatment <span class="sc">~</span> age <span class="sc">+</span> sex <span class="sc">+</span> bmi <span class="sc">+</span> smoking,</span>
+<span id="cb71-4"><a href="advanced-analysis.html#cb71-4" tabindex="-1"></a>  <span class="at">data =</span> ukb_data,</span>
+<span id="cb71-5"><a href="advanced-analysis.html#cb71-5" tabindex="-1"></a>  <span class="at">model =</span> <span class="st">&quot;xgboost&quot;</span>,</span>
+<span id="cb71-6"><a href="advanced-analysis.html#cb71-6" tabindex="-1"></a>  <span class="at">task =</span> <span class="st">&quot;classification&quot;</span>,</span>
+<span id="cb71-7"><a href="advanced-analysis.html#cb71-7" tabindex="-1"></a>  <span class="at">verbose =</span> <span class="cn">FALSE</span></span>
+<span id="cb71-8"><a href="advanced-analysis.html#cb71-8" tabindex="-1"></a>)</span>
+<span id="cb71-9"><a href="advanced-analysis.html#cb71-9" tabindex="-1"></a></span>
+<span id="cb71-10"><a href="advanced-analysis.html#cb71-10" tabindex="-1"></a><span class="co"># Extract predicted probabilities as PS</span></span>
+<span id="cb71-11"><a href="advanced-analysis.html#cb71-11" tabindex="-1"></a>ukb_data<span class="sc">$</span>ps_ml <span class="ot">&lt;-</span> <span class="fu">ukb_ml_predict</span>(ps_ml, <span class="at">newdata =</span> ukb_data, <span class="at">type =</span> <span class="st">&quot;prob&quot;</span>)[, <span class="dv">2</span>]</span>
+<span id="cb71-12"><a href="advanced-analysis.html#cb71-12" tabindex="-1"></a></span>
+<span id="cb71-13"><a href="advanced-analysis.html#cb71-13" tabindex="-1"></a><span class="co"># Use for IPTW analysis</span></span>
+<span id="cb71-14"><a href="advanced-analysis.html#cb71-14" tabindex="-1"></a>ukb_data<span class="sc">$</span>weight <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(</span>
+<span id="cb71-15"><a href="advanced-analysis.html#cb71-15" tabindex="-1"></a>  ukb_data<span class="sc">$</span>treatment <span class="sc">==</span> <span class="dv">1</span>,</span>
+<span id="cb71-16"><a href="advanced-analysis.html#cb71-16" tabindex="-1"></a>  <span class="dv">1</span> <span class="sc">/</span> ukb_data<span class="sc">$</span>ps_ml,</span>
+<span id="cb71-17"><a href="advanced-analysis.html#cb71-17" tabindex="-1"></a>  <span class="dv">1</span> <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> ukb_data<span class="sc">$</span>ps_ml)</span>
+<span id="cb71-18"><a href="advanced-analysis.html#cb71-18" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+<div id="required-packages" class="section level3 hasAnchor" number="9.9.9">
+<h3><span class="header-section-number">9.9.9</span> Required Packages<a href="advanced-analysis.html#required-packages" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<table>
+<thead>
+<tr class="header">
+<th>Function</th>
+<th>Required Package</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>ukb_ml_model(model = "rf")</code></td>
+<td><code>ranger</code></td>
+</tr>
+<tr class="even">
+<td><code>ukb_ml_model(model = "xgboost")</code></td>
+<td><code>xgboost</code></td>
+</tr>
+<tr class="odd">
+<td><code>ukb_ml_model(model = "glmnet")</code></td>
+<td><code>glmnet</code></td>
+</tr>
+<tr class="even">
+<td><code>ukb_ml_model(model = "svm")</code></td>
+<td><code>e1071</code></td>
+</tr>
+<tr class="odd">
+<td><code>ukb_ml_model(model = "nnet")</code></td>
+<td><code>nnet</code></td>
+</tr>
+<tr class="even">
+<td><code>ukb_ml_roc()</code></td>
+<td><code>pROC</code></td>
+</tr>
+<tr class="odd">
+<td><code>ukb_shap()</code></td>
+<td><code>fastshap</code></td>
+</tr>
+<tr class="even">
+<td><code>ukb_ml_survival(model = "rsf")</code></td>
+<td><code>randomForestSRC</code></td>
+</tr>
+</tbody>
+</table>
+<p>Install with:</p>
+<div class="sourceCode" id="cb72"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb72-1"><a href="advanced-analysis.html#cb72-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="fu">c</span>(<span class="st">&quot;ranger&quot;</span>, <span class="st">&quot;xgboost&quot;</span>, <span class="st">&quot;glmnet&quot;</span>, <span class="st">&quot;pROC&quot;</span>, <span class="st">&quot;fastshap&quot;</span>, <span class="st">&quot;randomForestSRC&quot;</span>))</span></code></pre></div>
+<hr />
+</div>
+<div id="required-packages-all-modules" class="section level3 hasAnchor" number="9.9.10">
+<h3><span class="header-section-number">9.9.10</span> Required Packages (All Modules)<a href="advanced-analysis.html#required-packages-all-modules" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<table>
+<thead>
+<tr class="header">
+<th>Module</th>
+<th>Required Package</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Propensity Score Matching</td>
+<td><code>MatchIt</code></td>
+</tr>
+<tr class="even">
+<td>GBM for PS</td>
+<td><code>gbm</code></td>
+</tr>
+<tr class="odd">
+<td>Mediation Analysis</td>
+<td><code>regmedint</code></td>
+</tr>
+<tr class="even">
+<td>MI Pooling</td>
+<td><code>mitools</code></td>
+</tr>
+<tr class="odd">
+<td>Cox Models</td>
+<td><code>survival</code></td>
+</tr>
+<tr class="even">
+<td>Random Forest</td>
+<td><code>ranger</code></td>
+</tr>
+<tr class="odd">
+<td>XGBoost</td>
+<td><code>xgboost</code></td>
+</tr>
+<tr class="even">
+<td>Elastic Net</td>
+<td><code>glmnet</code></td>
+</tr>
+<tr class="odd">
+<td>SVM</td>
+<td><code>e1071</code></td>
+</tr>
+<tr class="even">
+<td>Neural Network</td>
+<td><code>nnet</code></td>
+</tr>
+<tr class="odd">
+<td>ROC Analysis</td>
+<td><code>pROC</code></td>
+</tr>
+<tr class="even">
+<td>SHAP</td>
+<td><code>fastshap</code></td>
+</tr>
+<tr class="odd">
+<td>Survival ML</td>
+<td><code>randomForestSRC</code></td>
+</tr>
+</tbody>
+</table>
+<p>Install all with:</p>
+<div class="sourceCode" id="cb73"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb73-1"><a href="advanced-analysis.html#cb73-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="fu">c</span>(</span>
+<span id="cb73-2"><a href="advanced-analysis.html#cb73-2" tabindex="-1"></a>  <span class="st">&quot;MatchIt&quot;</span>, <span class="st">&quot;gbm&quot;</span>, <span class="st">&quot;regmedint&quot;</span>, <span class="st">&quot;mitools&quot;</span>, <span class="st">&quot;survival&quot;</span>,</span>
+<span id="cb73-3"><a href="advanced-analysis.html#cb73-3" tabindex="-1"></a>  <span class="st">&quot;ranger&quot;</span>, <span class="st">&quot;xgboost&quot;</span>, <span class="st">&quot;glmnet&quot;</span>, <span class="st">&quot;e1071&quot;</span>, <span class="st">&quot;nnet&quot;</span>,</span>
+<span id="cb73-4"><a href="advanced-analysis.html#cb73-4" tabindex="-1"></a>  <span class="st">&quot;pROC&quot;</span>, <span class="st">&quot;fastshap&quot;</span>, <span class="st">&quot;randomForestSRC&quot;</span></span>
+<span id="cb73-5"><a href="advanced-analysis.html#cb73-5" tabindex="-1"></a>))</span></code></pre></div>
+
+</div>
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="main-analysis.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+  "sharing": {
+    "github": true,
+    "facebook": false,
+    "twitter": false,
+    "linkedin": false,
+    "weibo": false,
+    "instapaper": false,
+    "vk": false,
+    "whatsapp": false,
+    "all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+  },
+  "fontsettings": {
+    "theme": "white",
+    "family": "sans",
+    "size": 2
+  },
+  "edit": {
+    "link": null,
+    "text": null
+  },
+  "history": {
+    "link": null,
+    "text": null
+  },
+  "view": {
+    "link": null,
+    "text": null
+  },
+  "download": ["UKBAnalytica.pdf", "UKBAnalytica.epub"],
+  "search": {
+    "engine": "fuse",
+    "options": null
+  },
+  "toc": {
+    "collapse": "subsection"
+  }
+});
+});
+</script>
+
+</body>
+
+</html>
