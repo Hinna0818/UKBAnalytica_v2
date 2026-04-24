@@ -1,5 +1,9 @@
 # UKBAnalytica News
 
+## UKBAnalytica 0.6.2.1（2026-04-24）
+Fix bugs in disease definition.
+
+
 ## UKBAnalytica 0.6.2 (2026-04-18)
 
 ### Survival workflow and participant flow reporting
